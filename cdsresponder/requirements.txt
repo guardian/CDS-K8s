@@ -7,3 +7,4 @@ certifi==2020.4.5.1
 jsonschema==3.2.0
 kubernetes==12.0.1
 lxml==4.6.3
+hikaru==0.2a0

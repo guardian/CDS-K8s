@@ -15,6 +15,8 @@ class MessageProcessor(object):
 
     class NackMessage(Exception):
         pass
+    class NackWithRetry(Exception):
+        pass
 
     def valid_message_receive(self, exchange_name, routing_key, delivery_tag, body):
         """
@@ -73,6 +75,9 @@ class MessageProcessor(object):
             except self.NackMessage:
                 logger.warning("Message was indicated to be un-processable, nacking without requeue")
                 channel.basic_nack(delivery_tag=tag, requeue=False)
+            except self.NackWithRetry:
+                logger.warning("Message could not be processed but should be requeued")
+                channel.basic_nack(delivery_tag=tag, requeue=True)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
                 channel.basic_nack(delivery_tag=tag, requeue=True)

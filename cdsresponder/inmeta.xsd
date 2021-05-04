@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!-- this document is used by the app to validate incoming XML data-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="meta-data">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="meta-movie-info" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="meta-movie">
+                            <xs:complexType>
+                                <xs:attribute name="tokens" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="meta-track">
+                            <xs:complexType>
+                            <xs:attribute name="tokens" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="meta-video-track">
+                            <xs:complexType>
+                            <xs:attribute name="tokens" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="meta-audio-track">
+                            <xs:complexType>
+                            <xs:attribute name="tokens" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="meta-hint-track">
+                            <xs:complexType>
+                            <xs:attribute name="tokens" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="meta-group" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="meta" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="name" use="required"/>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="type"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+</xs:schema>

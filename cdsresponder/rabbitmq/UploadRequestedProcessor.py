@@ -5,6 +5,7 @@ import os
 import pathlib
 import random
 import string
+from cds.cds_launcher import CDSLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ class UploadRequestedProcessor(MessageProcessor):
 
     def __init__(self):
         self.xsd_validator = xml.XMLSchema(file=UploadRequestedProcessor.find_inmeta_xsd())
+        self.launcher = CDSLauncher(os.getenv("NAMESPACE")) #NAMESPACE arg is only used if we are not in-cluster
 
     @staticmethod
     def find_inmeta_xsd():
@@ -95,6 +97,11 @@ class UploadRequestedProcessor(MessageProcessor):
             f.write(content)
         return target_filename
 
+    @staticmethod
+    def randomstring(length:int)->str:
+        letters = string.ascii_letters + string.digits
+        return "".join(random.choice(letters) for i in range(length))
+
     def valid_message_receive(self, exchange_name:str, routing_key:str, delivery_tag:str, body:dict):
         logger.info("Received upload request from {0} with key {1} and delivery tag {2}".format(exchange_name, routing_key, delivery_tag))
 
@@ -111,9 +118,12 @@ class UploadRequestedProcessor(MessageProcessor):
         elif "archive_id" in body:
             filename_hint = body["archive_id"]
         else:
-            letters = string.ascii_letters + string.digits
-            filename_hint = "".join(random.choice(letters) for i in range(10))
+            filename_hint = self.randomstring(10)
 
         inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
 
-        
+        try:
+            self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["route"])
+        except Exception as e:
+            logger.error("Could not launch job: {0}".format(str(e)))
+            raise self.NackWithRetry
