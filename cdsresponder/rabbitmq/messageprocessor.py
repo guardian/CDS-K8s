@@ -13,6 +13,9 @@ class MessageProcessor(object):
     schema = None       # override this in a subclass
     routing_key = None  # override this in a subclass
 
+    class NackMessage(Exception):
+        pass
+
     def valid_message_receive(self, exchange_name, routing_key, delivery_tag, body):
         """
         override this method in a subclass in order to receive information
@@ -67,6 +70,9 @@ class MessageProcessor(object):
             try:
                 self.valid_message_receive(method.exchange, method.routing_key, method.delivery_tag, validated_content)
                 channel.basic_ack(delivery_tag=tag)
+            except self.NackMessage:
+                logger.warning("Message was indicated to be un-processable, nacking without requeue")
+                channel.basic_nack(delivery_tag=tag, requeue=False)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
                 channel.basic_nack(delivery_tag=tag, requeue=True)
