@@ -5,7 +5,6 @@ import os
 import pathlib
 import random
 import string
-from cds.cds_launcher import CDSLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +43,7 @@ class UploadRequestedProcessor(MessageProcessor):
     }
 
     def __init__(self):
+        from cds.cds_launcher import CDSLauncher    #imported here so that it can be patched out during testing
         self.xsd_validator = xml.XMLSchema(file=UploadRequestedProcessor.find_inmeta_xsd())
         self.launcher = CDSLauncher(os.getenv("NAMESPACE")) #NAMESPACE arg is only used if we are not in-cluster
 
@@ -63,7 +63,7 @@ class UploadRequestedProcessor(MessageProcessor):
             parsed_xml = xml.fromstring(content)
             return self.xsd_validator.validate(parsed_xml)
         except xml.ParseError as e:
-            logger.error("Incoming inmeta data did not parse as XML: {}".format(str(e)),e)
+            logger.error("Incoming inmeta data did not parse as XML: {0}".format(str(e)))
             return False
 
     def build_filename(self, path:str, filename_hint:str)->str:
@@ -73,9 +73,10 @@ class UploadRequestedProcessor(MessageProcessor):
 
         i=1
         while True:
-            test_filename = os.path.join(path, filename_hint + str(i) + ".inmeta")
+            test_filename = os.path.join(path, filename_hint + "-" + str(i) + ".inmeta")
             if not os.path.exists(test_filename):
                 return test_filename
+            i+=1
             if i>=1000:
                 logger.error("Reached 1,000 iterations and the file {0} still exists, something must have gone wrong".format(test_filename))
                 raise RuntimeError("Could not build target filename")
@@ -122,8 +123,4 @@ class UploadRequestedProcessor(MessageProcessor):
 
         inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
 
-        try:
-            self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["route"])
-        except Exception as e:
-            logger.error("Could not launch job: {0}".format(str(e)))
-            raise self.NackWithRetry
+        self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["route"])

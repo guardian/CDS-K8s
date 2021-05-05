@@ -5,35 +5,35 @@
 <xs:element name="meta-data">
     <xs:complexType>
         <xs:sequence>
-            <xs:element name="meta-movie-info" maxOccurs="1">
+            <xs:element name="meta-movie-info" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="meta-movie">
+                    <xs:choice>
+                        <xs:element name="meta-movie" minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                                 <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="meta-track">
+                        <xs:element name="meta-track"  minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                             <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="meta-video-track">
+                        <xs:element name="meta-video-track"  minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                             <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="meta-audio-track">
+                        <xs:element name="meta-audio-track"  minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                             <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="meta-hint-track">
+                        <xs:element name="meta-hint-track" minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                             <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
             <xs:element name="meta-group" minOccurs="1" maxOccurs="1">

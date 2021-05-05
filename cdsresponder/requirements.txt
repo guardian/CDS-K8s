@@ -1,5 +1,4 @@
 python-dateutil==2.8.1
-django-nose==1.4.6
 coverage==5.2.1
 pika==1.1.0
 PyYAML==5.4
