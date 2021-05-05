@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import logging
 import pathlib
+import pika
 
 import cds.cds_launcher
 
@@ -159,6 +160,8 @@ class TestUploadRequestedProcessor(TestCase):
         """
         mocked_launcher = MagicMock(target=cds.cds_launcher.CDSLauncher)
         mocked_launcher.launch_cds_job = MagicMock()
+        mocked_channel = MagicMock(target=pika.channel.Channel)
+        mocked_channel.basic_publish = MagicMock()
 
         with patch("cds.cds_launcher.CDSLauncher", return_value=mocked_launcher):
             from rabbitmq.UploadRequestedProcessor import UploadRequestedProcessor
@@ -169,12 +172,13 @@ class TestUploadRequestedProcessor(TestCase):
             fake_message = {
                 "inmeta": "metdata-goes-here",
                 "filename": "somefile.mxf",
-                "route": "someroute.xml"
+                "routename": "someroute.xml"
             }
 
-            to_test.valid_message_receive("some-exchange","routing.key","2345",fake_message)
+            to_test.valid_message_receive(mocked_channel, "some-exchange","routing.key","2345",fake_message)
             to_test.validate_inmeta.assert_called_once_with(fake_message["inmeta"])
             to_test.write_out_inmeta.assert_called_once_with("somefile.mxf", fake_message["inmeta"])
             mocked_launcher.launch_cds_job.assert_called_once()
             self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][0], "/path/to/mdpacket.inmeta")
-            self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][2], fake_message["route"])
+            self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][2], fake_message["routename"])
+            mocked_channel.basic_publish.assert_called_once()

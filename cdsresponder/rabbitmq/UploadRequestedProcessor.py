@@ -5,11 +5,13 @@ import os
 import pathlib
 import random
 import string
-
+import pika
+import traceback
 logger = logging.getLogger(__name__)
 
 
 class UploadRequestedProcessor(MessageProcessor):
+    my_exchange = "cdsresponder"
     routing_key = "deliverables.syndication.*.upload"
     schema = {
         "type": "object",
@@ -103,12 +105,23 @@ class UploadRequestedProcessor(MessageProcessor):
         letters = string.ascii_letters + string.digits
         return "".join(random.choice(letters) for i in range(length))
 
-    def valid_message_receive(self, exchange_name:str, routing_key:str, delivery_tag:str, body:dict):
+    def inform_job_status(self, channel: pika.channel.Channel, status: str, body: dict):
+        import json
+        channel.basic_publish(
+            exchange=self.my_exchange,
+            routing_key="cds.job.{0}".format(status),
+            body=json.dumps(body),
+            mandatory=True
+        )
+
+    def valid_message_receive(self, channel: pika.channel.Channel, exchange_name:str, routing_key:str, delivery_tag:str, body:dict):
         logger.info("Received upload request from {0} with key {1} and delivery tag {2}".format(exchange_name, routing_key, delivery_tag))
 
         if not self.validate_inmeta(body["inmeta"]):
             logger.error("inmeta term did not validate as an xml inmeta document: {0}".format(self.xsd_validator.error_log))
             logger.error("Offending content was {0}".format(body["inmeta"]))
+            body["error"] = self.xsd_validator.error_log
+            self.inform_job_status(channel, "invalid", body)
             raise MessageProcessor.NackMessage
 
         if "filename" in body:
@@ -122,11 +135,27 @@ class UploadRequestedProcessor(MessageProcessor):
         else:
             filename_hint = self.randomstring(10)
 
+        inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
+        job_name = "cds-{0}-{1}".format(filename_hint, self.randomstring(4))
         try:
-            inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
-
-            self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["routename"])
+            result = self.launcher.launch_cds_job(inmeta_file, job_name, body["routename"])
+            body["job-id"] = result.metadata.uid
+            body["job-name"] = result.metadata.name
+            body["job-namespace"] = result.metadata.namespace
         except Exception as e:
             logger.error("Could not launch job for {0}: {1}".format(body, str(e)))
             os.remove(inmeta_file)
+            try:
+                body["job-name"] = job_name
+                body["error"] = str(e)
+                body["traceback"] = traceback.format_exc()
+                self.inform_job_status(channel, "invalid", body)
+            except Exception as e:
+                logger.error("Could not inform exchange of job failure: {0}".format(e))
+            raise MessageProcessor.NackMessage
+
+        try:
+            self.inform_job_status(channel, "started", body)
+        except Exception as e:
+            logger.error("Job started but could not inform exchange: {0}".format(e))
             raise MessageProcessor.NackMessage

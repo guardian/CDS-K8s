@@ -18,9 +18,10 @@ class MessageProcessor(object):
     class NackWithRetry(Exception):
         pass
 
-    def valid_message_receive(self, exchange_name, routing_key, delivery_tag, body):
+    def valid_message_receive(self, channel:pika.spec.Channel, exchange_name, routing_key, delivery_tag, body):
         """
         override this method in a subclass in order to receive information
+        :param channel: the open pika channel, for sending messages back to our exchange
         :param exchange_name:
         :param routing_key:
         :param delivery_tag:
@@ -70,7 +71,7 @@ class MessageProcessor(object):
 
         if validated_content is not None:
             try:
-                self.valid_message_receive(method.exchange, method.routing_key, method.delivery_tag, validated_content)
+                self.valid_message_receive(channel, method.exchange, method.routing_key, method.delivery_tag, validated_content)
                 channel.basic_ack(delivery_tag=tag)
             except self.NackMessage:
                 logger.warning("Message was indicated to be un-processable, nacking without requeue")

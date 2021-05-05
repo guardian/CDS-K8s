@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 class Command(object):
     @staticmethod
     def declare_rabbitmq_setup(channel:pika.channel.Channel):
-        channel.exchange_declare(exchange="cdsresponder-dlx", exchange_type="topic")
-        channel.exchange_declare(exchange="cdsresponder", exchange_type="direct")
+        channel.exchange_declare(exchange="cdsresponder-dlx", exchange_type="direct")
+        channel.exchange_declare(exchange="cdsresponder", exchange_type="topic")
 
     @staticmethod
     def connect_channel(exchange_name, handler, channel):

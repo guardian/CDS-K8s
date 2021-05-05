@@ -1,4 +1,5 @@
 from kubernetes import client, config
+import kubernetes.client.models
 import logging
 from hikaru import load_full_yaml, Job, get_clean_dict
 import pathlib
@@ -75,7 +76,7 @@ class CDSLauncher(object):
     def sanitise_job_name(job_name:str) -> str:
         return re.sub(r'[^A-Za-z0-9-]', "", job_name).lower()
 
-    def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str):
+    def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str) -> kubernetes.client.models.V1Job:
         command_parts = [
             "/usr/local/bin/cds_run.pl",
             "--input-inmeta",
@@ -85,7 +86,7 @@ class CDSLauncher(object):
         ]
         jobdoc = self.build_job_doc(job_name, command_parts)
         logger.debug("Built job doc for submission: {0}".format(jobdoc))
-        self.batch.create_namespaced_job(
+        return self.batch.create_namespaced_job(
             body=jobdoc,
             namespace=self.namespace
         )
