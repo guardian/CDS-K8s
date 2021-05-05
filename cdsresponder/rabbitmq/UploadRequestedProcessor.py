@@ -107,6 +107,7 @@ class UploadRequestedProcessor(MessageProcessor):
         logger.info("Received upload request from {0} with key {1} and delivery tag {2}".format(exchange_name, routing_key, delivery_tag))
 
         if not self.validate_inmeta(body["inmeta"]):
+            logger.error("inmeta term did not validate as an xml inmeta document: {0}".format(self.xsd_validator.error_log))
             logger.error("Offending content was {0}".format(body["inmeta"]))
             raise MessageProcessor.NackMessage
 
@@ -121,6 +122,11 @@ class UploadRequestedProcessor(MessageProcessor):
         else:
             filename_hint = self.randomstring(10)
 
-        inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
+        try:
+            inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
 
-        self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["route"])
+            self.launcher.launch_cds_job(inmeta_file, "cds-{0}-{1}".format(filename_hint, self.randomstring(4)), body["routename"])
+        except Exception as e:
+            logger.error("Could not launch job for {0}: {1}".format(body, str(e)))
+            os.remove(inmeta_file)
+            raise MessageProcessor.NackMessage

@@ -80,9 +80,9 @@ class MessageProcessor(object):
                 channel.basic_nack(delivery_tag=tag, requeue=True)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
-                channel.basic_nack(delivery_tag=tag, requeue=True)
-                channel.basic_cancel(method.consumer_tag)
-                raise ValueError("Could not process message")
+                channel.basic_nack(delivery_tag=tag, requeue=False)
+                # channel.basic_cancel(method.consumer_tag)
+                # raise ValueError("Could not process message")
         else:
             logger.error("Validated content was empty but no validation error? There must be a bug")
             channel.basic_nack(delivery_tag=tag, requeue=True)

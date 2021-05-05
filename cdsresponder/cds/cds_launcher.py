@@ -1,8 +1,9 @@
 from kubernetes import client, config
 import logging
-from hikaru import load_full_yaml, Job, get_json
+from hikaru import load_full_yaml, Job, get_clean_dict
 import pathlib
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class CDSLauncher(object):
         elif self.namespace is None and namespace is None:
             logger.error("If we are not running in a cluster you must specify a namespace within which to start jobs")
             raise ValueError("No namespace configured")
+        logger.info("Startup - we are in namespace {0}".format(self.namespace))
 
     def get_current_namespace(self):
         try:
@@ -37,7 +39,7 @@ class CDSLauncher(object):
             logger.debug("Could not open namespace secret file: {0}".format(e))
             return None
 
-    def load_job_template(self):
+    def find_job_template(self):
         filepath = os.path.join(pathlib.Path(__name__).parent.absolute(), "templates","cdsjob.yaml")
         if os.path.exists(filepath):
             return filepath
@@ -49,16 +51,31 @@ class CDSLauncher(object):
             return filepath
         raise RuntimeError("No path to cdsjob could be found")
 
+    def load_job_template(self):
+        filepath = self.find_job_template()
+        logger.debug("Loading job template from {0}".format(filepath))
+        loaded = load_full_yaml(filepath)
+        if len(loaded)==0:
+            raise ValueError("Nothing was defined in cdsjob.yaml")
+        jobs = [x for x in loaded if isinstance(x, Job)]
+        if len(jobs)==0:
+            raise ValueError("Of {0} objects defined in cdsjob.yaml, none of them was a Job".format(len(loaded)))
+        return jobs[0]
+
     def build_job_doc(self, job_name:str, cmd:list,):
         content_template = self.load_job_template()
         if not isinstance(content_template, Job):
-            raise TypeError("cdsjob template must be for a Job!")
+            raise TypeError("cdsjob template must be for a Job, we got a {0}!".format(content_template.__class__.__name__))
 
-        content_template.metadata.name=job_name
+        content_template.metadata.name = self.sanitise_job_name(job_name)
         content_template.spec.template.spec.containers[0].command = cmd
-        return get_json(content_template)
+        return get_clean_dict(content_template)
 
-    def launch_cds_job(self, inmeta_path:str, job_name:str, route_name:str):
+    @staticmethod
+    def sanitise_job_name(job_name:str) -> str:
+        return re.sub(r'[^A-Za-z0-9-]', "", job_name).lower()
+
+    def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str):
         command_parts = [
             "/usr/local/bin/cds_run.pl",
             "--input-inmeta",
