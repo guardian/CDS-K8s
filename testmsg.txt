@@ -1,0 +1,5 @@
+{
+"inmeta":"<?xml version=\"1.0\"?><meta-data><meta-group type=\"media meta\"><meta name=\"title\" value=\"test\"/></meta-group></meta-data>",
+"routename":"test.xml",
+"filename":"test.mxf"
+}

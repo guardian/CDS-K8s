@@ -1,0 +1,18 @@
+@(cbVersion:String, deploymentRoot:String)
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>CDS Log Viewer</title>
+    </head>
+
+    <body>
+        <div id="app"></div>
+        <script>
+            const deploymentRootPath = "@(deploymentRoot)"
+        </script>
+        <script
+            src="@(deploymentRoot)/assets/javascripts/bundle.js?v=@(cbVersion)"
+            type="text/javascript"></script>
+    </body>
+</html>
