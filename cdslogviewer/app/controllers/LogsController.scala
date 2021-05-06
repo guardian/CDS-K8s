@@ -7,6 +7,7 @@ import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
+
 import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -15,12 +16,15 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import play.api.http.HttpEntity
 import play.api.libs.circe.Circe
-import responses.GenericErrorResponse
+import responses.{GenericErrorResponse, LogInfo}
+
+import java.time.ZoneId
 
 @Singleton
 class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(implicit system:ActorSystem, mat:Materializer) extends AbstractController(cc) with Circe {
   private val logger = LoggerFactory.getLogger(getClass)
   private implicit val ec:ExecutionContext = system.dispatcher
+  private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
   def listRoutes = Action.async {
     val path = Paths.get(config.get[String]("cds.logbase"))
@@ -39,6 +43,26 @@ class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(i
           logger.error(s"Could not list directories: ${err.getMessage}",err)
           InternalServerError(GenericErrorResponse("config_error", "Could not list directories, see server logs").asJson)
       })
+  }
+
+  def listLogs(route:String) = Action {
+    val base = config.get[String]("cds.logbase")
+    val path = Paths.get(base, route)
+    if(!path.toString.startsWith(base)) {
+      BadRequest(GenericErrorResponse("bad_request","That is not a valid log").asJson)
+    } else if(!path.toFile.exists()) {
+      NotFound(GenericErrorResponse("not_found","The given route logs do not exist").asJson)
+    } else {
+      val stream = Source.fromIterator(()=>Files.newDirectoryStream(path).asScala.iterator)
+        .map(LogInfo.fromPath)
+        .collect({case Some(logInfo)=>logInfo})
+        .map(_.asJson.noSpaces + "\n")
+        .map(ByteString.apply)
+      Result(
+        header = ResponseHeader(200, Map.empty),
+        body = HttpEntity.Streamed(stream, None, Some("application/x-ndjson"))
+      )
+    }
   }
 
   def streamLog(route:String, logname:String, fromLine:Long) = Action {
