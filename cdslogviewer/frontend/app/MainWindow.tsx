@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { RouteComponentProps } from "react-router";
-import { makeStyles } from "@material-ui/core";
+import {makeStyles, Typography} from "@material-ui/core";
 import LogSelector from "./LogSelector";
 import LogReader from "./LogReader";
 import Helmet from "react-helmet";
@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
     gridTemplateColumns: "repeat(20, 5%)",
     gridTemplateRows: "[top] 200px [info-area] auto [bottom]",
-    height: "95vh",
+    height: "85vh",
     width: "98vw"
   },
   infoArea: {
@@ -35,9 +35,10 @@ const useStyles = makeStyles((theme) => ({
   logContent: {
     gridColumnStart: 4,
     gridColumnEnd: -1,
-    gridRowStart: "top",
+    gridRowStart: "info-area",
     gridRowEnd: "bottom",
     paddingLeft: "1em",
+    marginLeft: "1em",
     overflow: "auto",
   },
 }));
@@ -65,7 +66,10 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
           }
         </Helmet>
     <div className={classes.baseGrid}>
-      <div id="info-area" className={classes.infoArea} />
+      <div id="info-area" className={classes.infoArea}>
+        <Typography style={{textAlign: "center"}} variant="h2">Content delivery logs</Typography>
+      </div>
+
       <LogSelector
         selectionDidChange={logSelectionDidChange}
         className={classes.logSelector}
