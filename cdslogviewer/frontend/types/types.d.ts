@@ -21,4 +21,11 @@ interface LogLines {
     count: number;
 
 }
+
+
 declare module 'can-ndjson-stream';
+
+declare module "*.svg" {
+    const content: any;
+    export default content;
+}

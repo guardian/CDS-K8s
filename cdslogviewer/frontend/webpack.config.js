@@ -17,6 +17,7 @@ var config = {
             stream: require.resolve("stream-browserify"),
             util: require.resolve("util/"),
             crypto: require.resolve("crypto-browserify"),
+            buffer: require.resolve("buffer/")
         },
     },
     optimization: {
@@ -41,6 +42,10 @@ var config = {
                 test: /\.[tj]sx?/,
                 include: APP_DIR,
                 loader: "ts-loader",
+            },
+            {
+                test: /\.(css|s[ac]ss)$/,
+                use: ["style-loader", "css-loader", "sass-loader"],
             },
         ],
     },
