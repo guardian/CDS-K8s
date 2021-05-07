@@ -11,6 +11,7 @@ import {
 } from "@material-ui/core";
 import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
+import clsx from "clsx";
 
 interface LogLabelProps {
   label: string;
@@ -107,6 +108,12 @@ const useStyles = makeStyles((theme) => ({
     width: "20px",
     height: "20px",
   },
+  container: {
+    listStyle: "none",
+    padding: 0,
+    overflowY: "scroll",
+    overflowX: "hidden"
+  }
 }));
 
 const LogSelector: React.FC<LogSelectorProps> = (props) => {
@@ -133,8 +140,8 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   };
 
   return (
-    <Grid container direction="column" className={props.className}>
-      <Grid item>
+    <ul className={clsx(props.className, classes.container)}>
+      <li>
         <Grid container direction="row" justify="space-between">
           <Grid item>
             <Typography variant="h4">Jobs</Typography>
@@ -145,8 +152,8 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
             ) : null}
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item style={{ width: "100%" }}>
+      </li>
+      <li>
         <TreeView
           defaultExpandIcon={<ExpandMore />}
           defaultCollapseIcon={<ChevronRight />}
@@ -165,8 +172,8 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
             ))
           )}
         </TreeView>
-      </Grid>
-    </Grid>
+      </li>
+    </ul>
   );
 };
 

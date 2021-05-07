@@ -11,4 +11,14 @@ interface LogInfo {
     lastModified: string;
 }
 
+interface SelectedLog {
+    route: string;
+    logName: string;
+}
+
+interface LogLines {
+    content: string[];
+    count: number;
+
+}
 declare module 'can-ndjson-stream';
