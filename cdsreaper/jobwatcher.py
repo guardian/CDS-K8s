@@ -32,7 +32,16 @@ class JobWatcher(object):
         :param s: V1JobStatus object to be interrogated
         :return: boolean
         """
-        return s.active is not None and s.active>0
+        return s.active is not None and s.active>0 and (s.failed is None or s.failed==0)
+
+    @staticmethod
+    def job_is_retry(s: V1JobStatus)->bool:
+        """
+        returns true if the given job is retrying, i.e. it's active and has at least one failure
+        :param s:
+        :return:
+        """
+        return s.active is not None and s.active>0 and s.failed>0
 
     @staticmethod
     def job_is_failed(s:V1JobStatus)->bool:
@@ -58,6 +67,8 @@ class JobWatcher(object):
 
         if JobWatcher.job_is_running(j.status):
             return "running"
+        elif JobWatcher.job_is_retry(j.status):
+            return "retry"
         elif JobWatcher.job_is_starting(j.status):
             return "starting"
         elif JobWatcher.job_is_failed(j.status):
@@ -82,13 +93,18 @@ class JobWatcher(object):
         return "{0} - {1}".format(maybe_cond.reason, maybe_cond.message)
 
     def check_job(self, j:V1Job):
-        logger.info("Job {0} ({1}) is in status {2}".format(j.metadata.name, j.metadata.uid, self.get_job_status_string(j)))
-        routing_key = "cds.job.{0}".format(self.get_job_status_string(j))
+        status = self.get_job_status_string(j)
+        logger.info("Job {0} ({1}) is in status {2}".format(j.metadata.name, j.metadata.uid, status))
+        routing_key = "cds.job.{0}".format(status)
         message_body = {
             "job-id": j.metadata.uid,
             "job-name": j.metadata.name,
-            "job-namespace": j.metadata.namespace
+            "job-namespace": j.metadata.namespace,
+            "retry-count": j.status.failed if j.status.failed is not None else 0
         }
+
+        if status=="failed":
+            message_body["failure-reason"] = JobWatcher.get_job_failure_reason(j.status)
 
         self._sender.notify(routing_key, message_body)
 
