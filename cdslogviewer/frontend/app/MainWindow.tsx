@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { RouteComponentProps } from "react-router";
-import {makeStyles, Typography} from "@material-ui/core";
+import { makeStyles, Typography } from "@material-ui/core";
 import LogSelector from "./LogSelector";
 import LogReader from "./LogReader";
 import Helmet from "react-helmet";
@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     gridTemplateColumns: "repeat(20, 5%)",
     gridTemplateRows: "[top] 200px [info-area] auto [bottom]",
     height: "85vh",
-    width: "98vw"
+    width: "98vw",
   },
   infoArea: {
     gridColumnStart: 4,
@@ -48,36 +48,42 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const [lastError, setLastError] = useState<string | undefined>(undefined);
 
-  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(undefined);
+  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(
+    undefined
+  );
 
-  const logSelectionDidChange = (routeName:string, logName:string) => {
-    console.log("Selected ", logName, " from " , routeName);
+  const logSelectionDidChange = (routeName: string, logName: string) => {
+    console.log("Selected ", logName, " from ", routeName);
     setSelectedLog({
       route: routeName,
-      logName: logName
-    })
-  }
+      logName: logName,
+    });
+  };
 
   return (
-      <>
-        <Helmet>
-          {
-            selectedLog ? <title>{selectedLog.logName} - CDS Logs</title> : <title>CDS Log Viewer</title>
-          }
-        </Helmet>
-    <div className={classes.baseGrid}>
-      <div id="info-area" className={classes.infoArea}>
-        <Typography style={{textAlign: "center"}} variant="h2">Content delivery logs</Typography>
-      </div>
+    <>
+      <Helmet>
+        {selectedLog ? (
+          <title>{selectedLog.logName} - CDS Logs</title>
+        ) : (
+          <title>CDS Log Viewer</title>
+        )}
+      </Helmet>
+      <div className={classes.baseGrid}>
+        <div id="info-area" className={classes.infoArea}>
+          <Typography style={{ textAlign: "center" }} variant="h2">
+            Content delivery logs
+          </Typography>
+        </div>
 
-      <LogSelector
-        selectionDidChange={logSelectionDidChange}
-        className={classes.logSelector}
-        rightColumnExtent={4}
-      />
-      <LogReader className={classes.logContent} selectedLog={selectedLog}/>
-    </div>
-        </>
+        <LogSelector
+          selectionDidChange={logSelectionDidChange}
+          className={classes.logSelector}
+          rightColumnExtent={4}
+        />
+        <LogReader className={classes.logContent} selectedLog={selectedLog} />
+      </div>
+    </>
   );
 };
 

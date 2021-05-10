@@ -68,7 +68,6 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
           setIsLoaded(false);
           if (props.onError) props.onError(formatError(err, false));
         });
-
     }
   };
 
@@ -112,8 +111,8 @@ const useStyles = makeStyles((theme) => ({
     listStyle: "none",
     padding: 0,
     overflowY: "scroll",
-    overflowX: "hidden"
-  }
+    overflowX: "hidden",
+  },
 }));
 
 const LogSelector: React.FC<LogSelectorProps> = (props) => {

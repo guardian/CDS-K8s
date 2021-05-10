@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { ThemeProvider, createMuiTheme, CssBaseline } from "@material-ui/core";
 import axios from "axios";
 import MainWindow from "./MainWindow";
-import {Header, AppSwitcher} from "pluto-headers";
+import { Header, AppSwitcher } from "pluto-headers";
 
 const theme = createMuiTheme({
   typography: {
@@ -40,8 +40,8 @@ class App extends React.Component {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Header/>
-        <AppSwitcher/>
+        <Header />
+        <AppSwitcher />
         <div className="app">
           <Switch>
             <Route path="/" component={MainWindow} />

@@ -1,6 +1,6 @@
 import ndjsonStream from "can-ndjson-stream";
-import {authenticatedFetch} from "./common/authenticated_fetch";
-import {Simulate} from "react-dom/test-utils";
+import { authenticatedFetch } from "./common/authenticated_fetch";
+import { Simulate } from "react-dom/test-utils";
 import error = Simulate.error;
 
 async function loadLogsForRoute(
@@ -28,36 +28,42 @@ async function loadLogsForRoute(
  * @param fromLine
  */
 async function loadMoreLogLines(
-    routeName:string,
-    logName: string,
-    fromLine: number
-):Promise<LogLines> {
-  const response = await authenticatedFetch(`/api/${routeName}/${logName}?fromLine=${fromLine}`, {});
+  routeName: string,
+  logName: string,
+  fromLine: number
+): Promise<LogLines> {
+  const response = await authenticatedFetch(
+    `/api/${routeName}/${logName}?fromLine=${fromLine}`,
+    {}
+  );
 
-  if(response.status!=200) {
-    console.error("Could not load more log lines: server returned ", response.status);
+  if (response.status != 200) {
+    console.error(
+      "Could not load more log lines: server returned ",
+      response.status
+    );
     const errorText = await response.text();
     console.error("Server said ", errorText);
     throw `Server error ${response.status}`;
   }
 
-  if(response.body) {
+  if (response.body) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
 
-    let logLines:string[] = [];
-    let c=0;
+    let logLines: string[] = [];
+    let c = 0;
 
-    while(true) {
+    while (true) {
       const nextLine = await reader.read();
-      if(nextLine.done) {
+      if (nextLine.done) {
         return {
           content: logLines,
-          count: c
-        }
+          count: c,
+        };
       }
 
-      c+=1;
+      c += 1;
       logLines.push(decoder.decode(nextLine.value));
     }
   } else {
