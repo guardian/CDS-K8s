@@ -8,8 +8,11 @@ cdsresponder-build:
   stage: builds
   services:
     - docker:dind
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
   script:
-    - cd cdsresponder; docker build . -t guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+    - cd cdsresponder; docker build . -t $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+    - docker push $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
   tags:
     - gnm
     - docker
@@ -19,8 +22,11 @@ cdsreaper-build:
   stage: builds
   services:
     - docker:dind
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
   script:
-    - cd cdsreaper; docker build . -t guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+    - cd cdsreaper; docker build . -t $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+    - docker push $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
   tags:
     - gnm
     - docker
@@ -38,19 +44,15 @@ logviewer-build:
     - sbt test:compile
     - sbt test
     - mv ${HOME}/.sbt .sbt || true
-    - mv /tmp/pluto-core-testing.log . || /bin/true
   artifacts:
     reports:
       junit: cdslogviewer/junit-tests/*.xml
   cache:
     key: ${CI_COMMIT_REF_SLUG}-sbt
     paths:
-      - target/
-      - .sbt/
-      - .ivy2/
-  tags:
-    - gnm
-    - docker
+      - cdslogviewer/target/
+      - cdslogviewer/.sbt/
+      - cdslogviewer/.ivy2/
 
 logfrontend-build:
   image: node:12.18-alpine3.12
@@ -75,7 +77,7 @@ logfrontend-build:
       junit: cdslogviewer/frontend/junit.xml
 
 cdsresponder-test:
-  image: guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+  image: $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
   stage: tests
   script:
     - cd /opt/cdsresponder; python coverage run -m nose --source=$PWD --with-xunit
@@ -92,8 +94,10 @@ uploads:
   services:
     - docker:dind
   script:
+    - docker pull $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+    - docker tag $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
     - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
-    - docker push guardianmultimedia/pluto-deliverables:$CI_PIPELINE_IID
+    - docker push guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
   tags:
     - gnm
     - docker
