@@ -20,7 +20,34 @@ cdsreaper-build:
   services:
     - docker:dind
   script:
-    - cd cdsresponder; docker build . -t guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+    - cd cdsreaper; docker build . -t guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
+
+logviewer-build:
+  image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
+  stage: builds
+  variables:
+    JAVA_OPTS: -Dsbt.ivy.home=./cdslogviewer/.ivy2 -Divy.home=./cdslogviewer/.ivy2
+    SBT_JUNIT_OUTPUT: ./junit-tests
+  script:
+    - cd cdslogviewer
+    - if [ -d ".sbt" ]; then rm -rf ${HOME}/.sbt; mv .sbt ${HOME}; fi
+    - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
+    - sbt test:compile
+    - sbt test
+    - mv ${HOME}/.sbt .sbt || true
+    - mv /tmp/pluto-core-testing.log . || /bin/true
+  artifacts:
+    reports:
+      junit: cdslogviewer/junit-tests/*.xml
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-sbt
+    paths:
+      - target/
+      - .sbt/
+      - .ivy2/
   tags:
     - gnm
     - docker
