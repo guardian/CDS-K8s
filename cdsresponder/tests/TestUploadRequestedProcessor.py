@@ -117,7 +117,7 @@ class TestUploadRequestedProcessor(TestCase):
 
     def test_write_out_inmeta(self):
         """
-        write_out_inmeta should dump content to a file given by build_filename
+        write_out_inmeta should dump content to a file given §by build_filename
         :return:
         """
         mocked_launcher = MagicMock(target=cds.cds_launcher.CDSLauncher)
@@ -168,6 +168,7 @@ class TestUploadRequestedProcessor(TestCase):
             to_test = UploadRequestedProcessor()
             to_test.validate_inmeta = MagicMock(return_value=True)
             to_test.write_out_inmeta = MagicMock(return_value="/path/to/mdpacket.inmeta")
+            to_test.inform_job_status = MagicMock()
 
             fake_message = {
                 "inmeta": "metdata-goes-here",
@@ -181,4 +182,4 @@ class TestUploadRequestedProcessor(TestCase):
             mocked_launcher.launch_cds_job.assert_called_once()
             self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][0], "/path/to/mdpacket.inmeta")
             self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][2], fake_message["routename"])
-            mocked_channel.basic_publish.assert_called_once()
+            to_test.inform_job_status.assert_called_once()

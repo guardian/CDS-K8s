@@ -1,0 +1,53 @@
+stages:
+  - builds
+  - tests
+  - upload
+
+cdsresponder-build:
+  image: "docker:19.03.11"
+  stage: builds
+  services:
+    - docker:dind
+  script:
+    - cd cdsresponder; docker build . -t guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+
+logfrontend-build:
+  image: node:12.18-alpine3.12
+  stage: builds
+  script:
+    # git is required for yarn to be able to checkout the shared components
+    - apk add --no-cache git
+    - cd cdslogviewer/frontend
+    - sh ./setup_headers.sh
+    - yarn install
+    - yarn lint
+    - yarn test
+    - yarn build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-node
+    paths:
+      - cdslogviewer/frontend/node_modules
+  artifacts:
+    paths:
+      - cdslogviewer/public/javascripts/bundle.js
+    reports:
+      junit: cdslogviewer/frontend/junit.xml
+
+cdsresponder-test:
+  image: guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+  stage: tests
+  script:
+    - cd /opt/cdsresponder; python coverage run -m nose --source=$PWD --with-xunit
+  artifacts:
+    reports:
+      junit: /opt/cdsresponder/nosetests.xml
+
+uploads:
+  image: "docker:19.03.11"
+  stage: upload
+  services:
+    - docker:dind
+  script:
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
+    - docker push guardianmultimedia/pluto-deliverables:$CI_PIPELINE_IID
+
