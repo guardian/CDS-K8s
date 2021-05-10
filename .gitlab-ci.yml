@@ -10,6 +10,20 @@ cdsresponder-build:
     - docker:dind
   script:
     - cd cdsresponder; docker build . -t guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
+
+cdsreaper-build:
+  image: "docker:19.03.11"
+  stage: builds
+  services:
+    - docker:dind
+  script:
+    - cd cdsresponder; docker build . -t guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
 
 logfrontend-build:
   image: node:12.18-alpine3.12
@@ -41,6 +55,9 @@ cdsresponder-test:
   artifacts:
     reports:
       junit: /opt/cdsresponder/nosetests.xml
+  tags:
+    - gnm
+    - docker
 
 uploads:
   image: "docker:19.03.11"
@@ -50,4 +67,6 @@ uploads:
   script:
     - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
     - docker push guardianmultimedia/pluto-deliverables:$CI_PIPELINE_IID
-
+  tags:
+    - gnm
+    - docker
