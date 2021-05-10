@@ -79,11 +79,13 @@ logfrontend-build:
 cdsresponder-test:
   image: $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
   stage: tests
+  variables:
+    COVERAGE_FILE: /tmp/coverage.db
   script:
-    - cd /opt/cdsresponder; python coverage run -m nose --source=$PWD --with-xunit
+    - cd /opt/cdsresponder; nosetests --with-coverage --verbose --cover-package=. --with-xunit --xunit-file=/tmp/nosetests.xml
   artifacts:
     reports:
-      junit: /opt/cdsresponder/nosetests.xml
+      junit: /tmp/nosetests.xml
   tags:
     - gnm
     - docker
@@ -94,10 +96,14 @@ uploads:
   services:
     - docker:dind
   script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
     - docker pull $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
     - docker tag $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+    - docker pull $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+    - docker tag $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
     - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
     - docker push guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+    - docker push guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
   tags:
     - gnm
     - docker
