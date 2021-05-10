@@ -1,9 +1,12 @@
 from kubernetes import client, config, watch
+import kubernetes.client.exceptions
 from kubernetes.client.models.v1_job import V1Job
 from kubernetes.client.models.v1_job_status import V1JobStatus
 from kubernetes.client.models.v1_job_condition import V1JobCondition
 from kubernetes.client.models.v1_job_list import V1JobList
 from messagesender import MessageSender
+from journal import Journal
+
 import sys
 from models import *
 
@@ -11,10 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class JobWatcher(object):
-    def __init__(self, api_client:client.BatchV1Api, sender:MessageSender, namespace:str):
+    def __init__(self, api_client:client.BatchV1Api, sender:MessageSender, journal:Journal, namespace:str):
         self._batchv1 = api_client
         self._namespace = namespace
         self._sender = sender
+        self._journal = journal
 
     @staticmethod
     def job_is_starting(s: V1JobStatus)->bool:
@@ -115,16 +119,37 @@ class JobWatcher(object):
         """
         watcher = watch.Watch()
 
-        initial_status:V1JobList = self._batchv1.list_namespaced_job(self._namespace)
-        logger.info("Initiating job watch at resource version {0}".format(initial_status.metadata.resource_version))
-        for event in watcher.stream(self._batchv1.list_namespaced_job,
-                                    self._namespace,
-                                    resource_version=initial_status.metadata.resource_version):
-            logger.debug("Received job event: {0}".format(event['type']))
-            if isinstance(event["object"], V1Job):
-                self.check_job(event["object"])
+        resource_version = self._journal.get_most_recent_event()
+        if resource_version is None:
+            logger.info("Could not find a journalled resource version to start watch at, starting from most recent")
+            initial_status:V1JobList = self._batchv1.list_namespaced_job(self._namespace)
+            resource_version = initial_status.metadata.resource_version
+
+        logger.info("Initiating job watch at resource version {0}".format(resource_version))
+
+        try:
+            for event in watcher.stream(self._batchv1.list_namespaced_job,
+                                        self._namespace,
+                                        resource_version=resource_version):
+                logger.debug("Received job event: {0}".format(event['type']))
+                if isinstance(event["object"], V1Job):
+                    if event["type"]=="DELETED":
+                        continue    #we are not interested in the job object being deleted, it will have already been registered as succeeded/failed at this point.
+
+                    self.check_job(event["object"])
+                    self._journal.record_processed(event["object"].metadata.resource_version)
+                else:
+                    logger.warning("received notification with unexpected type {0}".format(type(event["object"])))
+
+        except kubernetes.client.exceptions.ApiException as err:
+            logger.warning("Could not watch resource: cluster said {0}".format(str(err)))
+            if err.status==410:
+                logger.warning("Restarting from the most recent event")
+                self._journal.clear_journal()
+                return self._watcher()
             else:
-                logger.warning("received notification with unexpected type {0}".format(type(event["object"])))
+                logger.error("Can't recover from {0} error".format(err.status))
+                raise
 
     def run_sync(self):
         """

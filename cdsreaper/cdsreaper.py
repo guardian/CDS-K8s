@@ -4,12 +4,15 @@ import os
 import logging
 from jobwatcher import JobWatcher
 import sys
-from messagesender import MessageSender
+from messagesender import MessageSender#
+from journal import Journal
 import pika
 
 logging.basicConfig(format="{asctime} {name}|{funcName} [{levelname}] {message}",level=logging.DEBUG,style='{')
 pikaLogger = logging.getLogger("pika")
 pikaLogger.level=logging.WARN
+k8logger = logging.getLogger("kubernetes")
+k8logger.level = logging.WARN
 logger = logging.getLogger(__name__)
 
 
@@ -29,14 +32,6 @@ def get_current_namespace():
     except IOError as e:
         logger.debug("Could not open namespace secret file: {0}".format(e))
         return None
-
-#
-# def init_redis_client():
-#     return redis.Redis(host=os.getenv("REDIS_HOST"),
-#                        port=int(os.getenv("REDIS_PORT",6379)),
-#                        db=int(os.getenv("REDIS_DB_NUM", 0))
-#                        )
-
 
 if __name__ == "__main__":
     init_k8s_client()
@@ -61,6 +56,13 @@ if __name__ == "__main__":
     )
 
     sender = MessageSender(rmq_setup, os.environ.get("MY_EXCHANGE", "cdsresponder"))
-
-    job_watcher = JobWatcher(kubernetes.client.BatchV1Api(), sender, namespace)
+    #prefer to crash if we can't connect at startup, this makes it obvious to monitoring that we are not running yet.
+    #once we are up and running, retry more, in order to try and stay up.
+    journal = Journal(os.getenv("REDIS_HOST"),
+                      int(os.getenv("REDIS_PORT",6379)),
+                      int(os.getenv("REDIS_DB_NUM", 0)),
+                      os.getenv("REDIS_PASS"),
+                      max_retries=1)
+    journal.max_retries = 10
+    job_watcher = JobWatcher(kubernetes.client.BatchV1Api(), sender, journal, namespace)
     job_watcher.run_sync()
