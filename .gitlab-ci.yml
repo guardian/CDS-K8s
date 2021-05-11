@@ -3,6 +3,8 @@ stages:
   - tests
   - upload
 
+# The python apps are built as docker images and pushed to the gitlab repo first.
+# Then, tests are run _within_ the built image, and if they pass it is re-tagged and uploaded to docker hub.
 cdsresponder-build:
   image: "docker:19.03.11"
   stage: builds
@@ -31,7 +33,7 @@ cdsreaper-build:
     - gnm
     - docker
 
-logviewer-build:
+logviewer-test:
   image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
   stage: builds
   variables:
@@ -40,10 +42,12 @@ logviewer-build:
   script:
     - cd cdslogviewer
     - if [ -d ".sbt" ]; then rm -rf ${HOME}/.sbt; mv .sbt ${HOME}; fi
+    - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv .cache ${HOME}; fi
     - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
     - sbt test:compile
     - sbt test
     - mv ${HOME}/.sbt .sbt || true
+    - mv ${HOME}/.cache .cache || true
   artifacts:
     reports:
       junit: cdslogviewer/junit-tests/*.xml
@@ -53,6 +57,7 @@ logviewer-build:
       - cdslogviewer/target/
       - cdslogviewer/.sbt/
       - cdslogviewer/.ivy2/
+      - cdslogviewer/.cache/
 
 logfrontend-build:
   image: node:12.18-alpine3.12
@@ -89,6 +94,37 @@ cdsresponder-test:
   tags:
     - gnm
     - docker
+
+logviewer-upload:
+  image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
+  stage: upload
+  services:
+    - docker:19.03.11-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs" #this is mounted by the gitlab CI system so is populated from the dind service
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_VERIFY: 1
+    JAVA_OPTS: -Dsbt.ivy.home=./cdslogviewer/.ivy2 -Divy.home=./cdslogviewer/.ivy2 -Ddocker.username=guardianmultimedia -Dbuild.number=${CI_PIPELINE_IID}
+    SBT_JUNIT_OUTPUT: ./junit-tests
+  before_script:
+    - mkdir ~/.docker && cp -a /certs/client/*.pem ~/.docker
+    - docker version
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
+  script:
+    - cd cdslogviewer
+    - if [ -d ".sbt" ]; then rm -rf ${HOME}/.sbt; mv .sbt ${HOME}; fi
+    - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv .cache ${HOME}; fi
+    - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
+    - sbt docker:publish
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-sbt
+    paths:
+      - cdslogviewer/target/
+      - cdslogviewer/.sbt/
+      - cdslogviewer/.ivy2/
+      - cdslogviewer/.cache/
+    policy: pull
 
 uploads:
   image: "docker:19.03.11"
