@@ -33,6 +33,7 @@ def get_current_namespace():
         logger.debug("Could not open namespace secret file: {0}".format(e))
         return None
 
+
 if __name__ == "__main__":
     init_k8s_client()
 

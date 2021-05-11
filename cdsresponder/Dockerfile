@@ -9,5 +9,6 @@ ADD rabbitmq /opt/cdsresponder/rabbitmq
 ADD templates /opt/cdsresponder/templates
 ADD tests /opt/cdsresponder/tests
 USER nobody
+ENV PYTHONPATH=/opt/cdsresponder
 
 CMD /opt/cdsresponder/cdsresponder.py

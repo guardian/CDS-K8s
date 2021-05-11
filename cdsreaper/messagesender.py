@@ -10,10 +10,13 @@ logger = logging.getLogger(__name__)
 ### making us miss k8s notifications.  But, if we have rmq issues, would we just miss those messages _anyway_? Would it
 ### do any good to hold them in memory? Should we buffer them to redis or something? What if something happens to that?
 ### Therefore this is currently a simple, blocking implementation that won't return until a delivery confirmation has been
-### received from the broker
+### received from the broker.
+### We now use a journal to pick up from the last _processed_ k8s notification on startup as opposed to the most recent
+### so this implementation is probably enough
 
 
 class MessageSender(object):
+    DELAY_SECONDS_PER_RETRY = 5
     """
     Object that maintains a rabbitmq connection and sends messages to a given exchange
     """
@@ -53,7 +56,7 @@ class MessageSender(object):
         been exceeded
         :param routing_key:
         :param msg_content:
-        :param attempt: don't set this, it is ussed internally as a retry counter
+        :param attempt: don't set this, it is used internally as a retry counter
         :return: boolean indicating if the message was sent or not. Assume unrecoverable error if false.
         """
         error_exit = False

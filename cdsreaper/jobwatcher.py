@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class JobWatcher(object):
-    def __init__(self, api_client:client.BatchV1Api, sender:MessageSender, journal:Journal, namespace:str):
+    def __init__(self, api_client: client.BatchV1Api, sender: MessageSender, journal: Journal, namespace: str):
         self._batchv1 = api_client
         self._namespace = namespace
         self._sender = sender
@@ -85,7 +85,7 @@ class JobWatcher(object):
         if len(conditions)==0:
             return None
 
-        sorted_conditions = sorted(conditions, key=lambda c: c.last_probe_time)
+        sorted_conditions = sorted(conditions, key=lambda c: c.last_probe_time, reverse=True)
         return sorted_conditions[0]
 
     @staticmethod
@@ -110,7 +110,7 @@ class JobWatcher(object):
         if status=="failed":
             message_body["failure-reason"] = JobWatcher.get_job_failure_reason(j.status)
 
-        self._sender.notify(routing_key, message_body)
+        return self._sender.notify(routing_key, message_body)
 
     def _watcher(self):
         """
@@ -134,7 +134,9 @@ class JobWatcher(object):
                 logger.debug("Received job event: {0}".format(event['type']))
                 if isinstance(event["object"], V1Job):
                     if event["type"]=="DELETED":
-                        continue    #we are not interested in the job object being deleted, it will have already been registered as succeeded/failed at this point.
+                        # we are not interested in the job object being deleted,
+                        # it will have already been registered as succeeded/failed at this point.
+                        continue
 
                     self.check_job(event["object"])
                     self._journal.record_processed(event["object"].metadata.resource_version)
