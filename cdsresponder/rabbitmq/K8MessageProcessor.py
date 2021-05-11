@@ -4,6 +4,7 @@ from typing import Optional, List
 import logging
 from kubernetes import client, config
 from kubernetes.client.models.v1_pod import V1Pod
+from kubernetes.client.models.v1_pod_list import V1PodList
 import os
 import k8s.k8utils
 
@@ -95,13 +96,13 @@ class K8MessageProcessor(MessageProcessor):
             logger.warning("If you want pod logs to be saved, then you must set POD_LOGS_BASEPATH to a valid writable filepath")
             return 0
 
-        pod_list:List[V1Pod] = self.k8core.list_namespaced_pod(job_namespace, label_selector="job-name={0}".format(job_name))
+        pod_list:V1PodList = self.k8core.list_namespaced_pod(job_namespace, label_selector="job-name={0}".format(job_name))
 
-        for pod in pod_list:
-            filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name)
+        for pod in pod_list.items:
+            filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name + ".log")
             k8s.k8utils.dump_pod_logs(pod.metadata.name, pod.metadata.namespace, filename)
 
-        return len(pod_list)
+        return len(pod_list.items)
 
     def safe_delete_job(self, job_name:str, job_namespace:str):
         try:
