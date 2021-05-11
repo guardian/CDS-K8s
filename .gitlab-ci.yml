@@ -95,6 +95,20 @@ cdsresponder-test:
     - gnm
     - docker
 
+cdsreaper-test:
+  image: $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+  stage: tests
+  variables:
+    COVERAGE_FILE: /tmp/coverage.db
+  script:
+    - cd /opt/cdsreaper; nosetests --with-coverage --verbose --cover-package=. --with-xunit --xunit-file=/tmp/nosetests.xml
+  artifacts:
+    reports:
+      junit: /tmp/nosetests.xml
+  tags:
+    - gnm
+    - docker
+
 logviewer-upload:
   image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
   stage: upload

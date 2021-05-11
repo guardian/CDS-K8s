@@ -9,6 +9,7 @@ class Journal(object):
     implements a journalling function, whereby the most recent sequence number of the k8s watcher is stored in redis.
     this allows us to pick up from where we left off in the event of crashes/failure
     """
+    EVENT_KEY = "cdsreaper:most-recent-event"
 
     def __init__(self, redis_host:str, redis_port:int, redis_db:int, redis_pw:str, max_retries=10):
         self.redis_host = redis_host
@@ -47,7 +48,7 @@ class Journal(object):
         gets the most recent journalled event id
         :return: the id, or None if nothing was set.
         """
-        maybe_value = self._conn.get("cdsreaper:most-recent-event")
+        maybe_value = self._conn.get(Journal.EVENT_KEY)
         if maybe_value is None:
             return None
         else:
@@ -55,6 +56,7 @@ class Journal(object):
                 return int(maybe_value)
             except (TypeError, ValueError) as e:
                 logger.error("Invalid value {0} at cdsreaper:most-recent-event could not be converted to int. Processing will start from latest event.".format(maybe_value))
+                self._conn.delete(Journal.EVENT_KEY)
                 return None
 
     def record_processed(self, id:int):
@@ -63,7 +65,7 @@ class Journal(object):
         :param id:
         :return:
         """
-        self._conn.set("cdsreaper:most-recent-event", id)
+        self._conn.set(Journal.EVENT_KEY, id)
 
     def clear_journal(self):
         """
@@ -71,4 +73,4 @@ class Journal(object):
         this can be used if we have gone over the event horizon of the cluster and must start listing afresh
         :return:
         """
-        self._conn.delete("cdsreaper:most-recent-event")
+        self._conn.delete(Journal.EVENT_KEY)
