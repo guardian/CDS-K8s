@@ -13,8 +13,14 @@ cdsresponder-build:
   before_script:
     - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
   script:
+    - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv cache ${HOME}; fi
     - cd cdsresponder; docker build . -t $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
     - docker push $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+    - mv ${HOME}/.cache . || true
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-responder
+    paths:
+      - .cache
   tags:
     - gnm
     - docker
