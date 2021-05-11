@@ -95,7 +95,7 @@ class K8MessageProcessor(MessageProcessor):
             logger.warning("If you want pod logs to be saved, then you must set POD_LOGS_BASEPATH to a valid writable filepath")
             return 0
 
-        pod_list:List[V1Pod] = self.k8core.list_namespaced_pod(job_namespace,label_selector="job-name={0}".format(job_name))
+        pod_list:List[V1Pod] = self.k8core.list_namespaced_pod(job_namespace, label_selector="job-name={0}".format(job_name))
 
         for pod in pod_list:
             filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name)
@@ -120,7 +120,7 @@ class K8MessageProcessor(MessageProcessor):
                 if self.should_keep_jobs:
                     logger.info("Retaining job information {0} in cluster as KEEP_JOBS is set to 'true' or 'yes'. Remove it or set to 'no' in order to remove completed jobs.")
                 else:
-                    logger.info("Removing completed job {0}...",format(msg.job_name))
+                    logger.info("Removing completed job {0}...".format(msg.job_name))
                     self.safe_delete_job(msg.job_name, msg.job_namespace)
             else:
                 logger.info("Job {0} is in progress".format(msg.job_name))

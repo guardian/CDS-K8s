@@ -5,6 +5,7 @@ RUN apk add --no-cache alpine-sdk libxml2 libxml2-dev libxslt libxslt-dev && pip
 COPY cdsresponder.py /opt/cdsresponder/cdsresponder.py
 COPY inmeta.xsd /opt/cdsresponder/inmeta.xsd
 ADD cds /opt/cdsresponder/cds
+ADD k8s /opt/cdsresponder/k8s
 ADD rabbitmq /opt/cdsresponder/rabbitmq
 ADD templates /opt/cdsresponder/templates
 ADD tests /opt/cdsresponder/tests

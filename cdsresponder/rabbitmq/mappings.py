@@ -11,6 +11,6 @@ EXCHANGE_MAPPINGS = [
     },
     {
         "exchange": 'cdsresponder',
-        "heandler": K8MessageProcessor(os.getenv("NAMESPACE")),
+        "handler": K8MessageProcessor(os.getenv("NAMESPACE")),
     }
 ]
