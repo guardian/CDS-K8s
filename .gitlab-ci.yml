@@ -1,0 +1,145 @@
+stages:
+  - builds
+  - tests
+  - upload
+
+# The python apps are built as docker images and pushed to the gitlab repo first.
+# Then, tests are run _within_ the built image, and if they pass it is re-tagged and uploaded to docker hub.
+cdsresponder-build:
+  image: "docker:19.03.11"
+  stage: builds
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
+  script:
+    - cd cdsresponder; docker build . -t $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+    - docker push $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
+
+cdsreaper-build:
+  image: "docker:19.03.11"
+  stage: builds
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
+  script:
+    - cd cdsreaper; docker build . -t $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+    - docker push $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
+
+logviewer-test:
+  image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
+  stage: builds
+  variables:
+    JAVA_OPTS: -Dsbt.ivy.home=./cdslogviewer/.ivy2 -Divy.home=./cdslogviewer/.ivy2
+    SBT_JUNIT_OUTPUT: ./junit-tests
+  script:
+    - cd cdslogviewer
+    - if [ -d ".sbt" ]; then rm -rf ${HOME}/.sbt; mv .sbt ${HOME}; fi
+    - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv .cache ${HOME}; fi
+    - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
+    - sbt test:compile
+    - sbt test
+    - mv ${HOME}/.sbt .sbt || true
+    - mv ${HOME}/.cache .cache || true
+  artifacts:
+    reports:
+      junit: cdslogviewer/junit-tests/*.xml
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-sbt
+    paths:
+      - cdslogviewer/target/
+      - cdslogviewer/.sbt/
+      - cdslogviewer/.ivy2/
+      - cdslogviewer/.cache/
+
+logfrontend-build:
+  image: node:12.18-alpine3.12
+  stage: builds
+  script:
+    # git is required for yarn to be able to checkout the shared components
+    - apk add --no-cache git
+    - cd cdslogviewer/frontend
+    - sh ./setup_headers.sh
+    - yarn install
+    - yarn lint
+    - yarn test
+    - yarn build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-node
+    paths:
+      - cdslogviewer/frontend/node_modules
+  artifacts:
+    paths:
+      - cdslogviewer/public/javascripts/bundle.js
+    reports:
+      junit: cdslogviewer/frontend/junit.xml
+
+cdsresponder-test:
+  image: $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+  stage: tests
+  variables:
+    COVERAGE_FILE: /tmp/coverage.db
+  script:
+    - cd /opt/cdsresponder; nosetests --with-coverage --verbose --cover-package=. --with-xunit --xunit-file=/tmp/nosetests.xml
+  artifacts:
+    reports:
+      junit: /tmp/nosetests.xml
+  tags:
+    - gnm
+    - docker
+
+logviewer-upload:
+  image: registry.gitlab.com/codmill/customer-projects/guardian/pluto-core/projectlockerbuild:20210302_1
+  stage: upload
+  services:
+    - docker:19.03.11-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs" #this is mounted by the gitlab CI system so is populated from the dind service
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_VERIFY: 1
+    JAVA_OPTS: -Dsbt.ivy.home=./cdslogviewer/.ivy2 -Divy.home=./cdslogviewer/.ivy2 -Ddocker.username=guardianmultimedia -Dbuild.number=${CI_PIPELINE_IID}
+    SBT_JUNIT_OUTPUT: ./junit-tests
+  before_script:
+    - mkdir ~/.docker && cp -a /certs/client/*.pem ~/.docker
+    - docker version
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
+  script:
+    - cd cdslogviewer
+    - if [ -d ".sbt" ]; then rm -rf ${HOME}/.sbt; mv .sbt ${HOME}; fi
+    - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv .cache ${HOME}; fi
+    - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
+    - sbt docker:publish
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-sbt
+    paths:
+      - cdslogviewer/target/
+      - cdslogviewer/.sbt/
+      - cdslogviewer/.ivy2/
+      - cdslogviewer/.cache/
+    policy: pull
+
+uploads:
+  image: "docker:19.03.11"
+  stage: upload
+  services:
+    - docker:dind
+  script:
+    - echo $CI_JOB_TOKEN | docker login $DOCKER_REPOSITORY --username "gitlab-ci-token" --password-stdin
+    - docker pull $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID
+    - docker tag $DOCKER_REPOSITORY/cdsresponder:$CI_PIPELINE_IID guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+    - docker pull $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID
+    - docker tag $DOCKER_REPOSITORY/cdsreaper:$CI_PIPELINE_IID guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
+    - docker push guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
+    - docker push guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+  tags:
+    - gnm
+    - docker
