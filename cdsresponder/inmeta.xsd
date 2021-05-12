@@ -7,7 +7,7 @@
         <xs:sequence>
             <xs:element name="meta-movie-info" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
-                    <xs:choice>
+                    <xs:sequence>
                         <xs:element name="meta-movie" minOccurs="0" maxOccurs="1">
                             <xs:complexType>
                                 <xs:attribute name="tokens" use="required"/>
@@ -33,7 +33,7 @@
                             <xs:attribute name="tokens" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:choice>
+                    </xs:sequence>
                 </xs:complexType>
             </xs:element>
             <xs:element name="meta-group" minOccurs="1" maxOccurs="1">

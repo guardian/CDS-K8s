@@ -23,16 +23,16 @@ class UploadRequestedProcessor(MessageProcessor):
                 "type": "integer"
             },
             "filename": {
-                "type": "string"
+                "type": ["string","null"]
             },
             "online_id": {
-                "type": "string"
+                "type": ["string","null"]
             },
             "nearline_id": {
-                "type": "string"
+                "type": ["string","null"]
             },
             "archive_id": {
-                "type": "string"
+                "type": ["string","null"]
             },
             "inmeta": {
                 "type": "string"
@@ -124,21 +124,30 @@ class UploadRequestedProcessor(MessageProcessor):
             self.inform_job_status(channel, "invalid", body)
             raise MessageProcessor.NackMessage
 
-        if "filename" in body:
+        if "filename" in body and body["filename"] is not None:
             filename_hint = body["filename"]
-        elif "online_id" in body:
+        elif "online_id" in body and body["online_id"] is not None:
             filename_hint = body["online_id"]
-        elif "nearline_id" in body:
+        elif "nearline_id" in body and body["nearline_id"] is not None:
             filename_hint = body["nearline_id"]
-        elif "archive_id" in body:
+        elif "archive_id" in body and body["archive_id"] is not None:
             filename_hint = body["archive_id"]
         else:
             filename_hint = self.randomstring(10)
 
+        labels = {
+            "deliverable-asset-id": str(body["deliverable_asset"]) if "deliverable_asset" in body else "None",
+            "deliverable_bundle_id": str(body["deliverable_bundle"]) if "deliverable_bundle" in body else "None",
+            "filename": str(body["filename"]) if "filename" in body else "None",
+            "online_id": str(body["online_id"]) if "online_id" in body else "None",
+            "nearline_id": str(body["nearline_id"]) if "nearline_id" in body else "None",
+            "archive_id": str(body["archive_id"]) if "archive_id" in body else "None",
+        }
+
         inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
         job_name = "cds-{0}-{1}".format(filename_hint, self.randomstring(4))
         try:
-            result = self.launcher.launch_cds_job(inmeta_file, job_name, body["routename"])
+            result = self.launcher.launch_cds_job(inmeta_file, job_name, body["routename"], labels)
             body["job-id"] = result.metadata.uid
             body["job-name"] = result.metadata.name
             body["job-namespace"] = result.metadata.namespace
