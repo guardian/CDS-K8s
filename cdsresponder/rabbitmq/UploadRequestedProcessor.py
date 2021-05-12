@@ -7,6 +7,7 @@ import random
 import string
 import pika
 import traceback
+import re
 logger = logging.getLogger(__name__)
 
 
@@ -114,6 +115,22 @@ class UploadRequestedProcessor(MessageProcessor):
             mandatory=True
         )
 
+    sanitizer = re.compile(r'[^A-Za-z0-9\-_.]')
+
+    @staticmethod
+    def make_safe_label(content:str)->str:
+        """
+        kubernetes labels can't be longer than 63 chars or contain anything non-alphanumeric, _ - and .
+        :param content: string to sanitise
+        :return: sanitised string
+        """
+        sanitised = UploadRequestedProcessor.sanitizer.sub("", content)
+        if len(sanitised)<63:
+            return sanitised
+        else:
+            abbreviated=sanitised[0:60]
+            return abbreviated+"..."
+
     def valid_message_receive(self, channel: pika.channel.Channel, exchange_name:str, routing_key:str, delivery_tag:str, body:dict):
         logger.info("Received upload request from {0} with key {1} and delivery tag {2}".format(exchange_name, routing_key, delivery_tag))
 
@@ -137,11 +154,10 @@ class UploadRequestedProcessor(MessageProcessor):
 
         labels = {
             "deliverable-asset-id": str(body["deliverable_asset"]) if "deliverable_asset" in body else "None",
-            "deliverable_bundle_id": str(body["deliverable_bundle"]) if "deliverable_bundle" in body else "None",
-            "filename": str(body["filename"]) if "filename" in body else "None",
-            "online_id": str(body["online_id"]) if "online_id" in body else "None",
-            "nearline_id": str(body["nearline_id"]) if "nearline_id" in body else "None",
-            "archive_id": str(body["archive_id"]) if "archive_id" in body else "None",
+            "deliverable-bundle-id": str(body["deliverable_bundle"]) if "deliverable_bundle" in body else "None",
+            "online-id": self.make_safe_label(str(body["online_id"])) if "online_id" in body else "None",
+            "nearline-id": self.make_safe_label(str(body["nearline_id"])) if "nearline_id" in body else "None",
+            "archive-id": self.make_safe_label(str(body["archive_id"])) if "archive_id" in body else "None",
         }
 
         inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])

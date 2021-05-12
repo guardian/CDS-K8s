@@ -77,6 +77,7 @@ class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(i
         val stream = FileIO.fromPath(path)
           .via(Framing.delimiter(ByteString("\n"), 32768, true))
           .drop(fromLine)
+          .map(_ ++ ByteString("\n"))
         //setting Content-Length to the length of the file does not make sense, since we may have skipped an unknown
         //number of characters if fromLine != 0
         Result(
