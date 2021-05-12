@@ -63,20 +63,26 @@ class CDSLauncher(object):
             raise ValueError("Of {0} objects defined in cdsjob.yaml, none of them was a Job".format(len(loaded)))
         return jobs[0]
 
-    def build_job_doc(self, job_name:str, cmd:list,):
+    def build_job_doc(self, job_name:str, cmd:list, labels:dict):
         content_template = self.load_job_template()
         if not isinstance(content_template, Job):
             raise TypeError("cdsjob template must be for a Job, we got a {0}!".format(content_template.__class__.__name__))
 
         content_template.metadata.name = self.sanitise_job_name(job_name)
         content_template.spec.template.spec.containers[0].command = cmd
+        existing_labels = content_template.metadata.labels
+        if existing_labels is None:
+            existing_labels = {}
+        existing_labels.update(labels)
+        content_template.metadata.labels = existing_labels
+
         return get_clean_dict(content_template)
 
     @staticmethod
     def sanitise_job_name(job_name:str) -> str:
         return re.sub(r'[^A-Za-z0-9-]', "", job_name).lower()
 
-    def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str) -> kubernetes.client.models.V1Job:
+    def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str, labels:dict) -> kubernetes.client.models.V1Job:
         command_parts = [
             "/usr/local/bin/cds_run.pl",
             "--input-inmeta",
@@ -84,7 +90,7 @@ class CDSLauncher(object):
             "--route",
             route_name
         ]
-        jobdoc = self.build_job_doc(job_name, command_parts)
+        jobdoc = self.build_job_doc(job_name, command_parts, labels)
         logger.debug("Built job doc for submission: {0}".format(jobdoc))
         return self.batch.create_namespaced_job(
             body=jobdoc,
