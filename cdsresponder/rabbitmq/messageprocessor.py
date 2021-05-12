@@ -52,7 +52,7 @@ class MessageProcessor(object):
         tag = method.delivery_tag
         validated_content = None
         try:
-            logger.info("Received message with delivery tag {2} from {0}: {1}".format(channel, body.decode('UTF-8'), tag))
+            logger.debug("Received message with delivery tag {2} from {0}: {1}".format(channel, body.decode('UTF-8'), tag))
 
             if self.schema:
                 validated_content = self.validate_with_schema(body)

@@ -5,6 +5,7 @@ from hikaru import load_full_yaml, Job, get_clean_dict
 import pathlib
 import os
 import re
+from k8s.k8utils import get_current_namespace
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class CDSLauncher(object):
             config.load_kube_config(kube_config_file)
 
         self.batch = client.BatchV1Api()
-        self.namespace = self.get_current_namespace()
+        self.namespace = get_current_namespace()
         if self.namespace is None and namespace is not None:
             logger.info("Not running in cluster, falling back to configured namespace {0}", namespace)
             self.namespace = namespace
@@ -31,14 +32,6 @@ class CDSLauncher(object):
             logger.error("If we are not running in a cluster you must specify a namespace within which to start jobs")
             raise ValueError("No namespace configured")
         logger.info("Startup - we are in namespace {0}".format(self.namespace))
-
-    def get_current_namespace(self):
-        try:
-            with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
-                return f.read()
-        except IOError as e:
-            logger.debug("Could not open namespace secret file: {0}".format(e))
-            return None
 
     def find_job_template(self):
         filepath = os.path.join(pathlib.Path(__name__).parent.absolute(), "templates","cdsjob.yaml")
