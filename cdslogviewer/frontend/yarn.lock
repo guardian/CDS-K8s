@@ -4380,9 +4380,9 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-"pluto-headers@https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.3.4":
-  version "1.3.4"
-  resolved "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#31e47670e11bd46fa4e8085016c8978af433b992"
+"pluto-headers@https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.3.5":
+  version "1.3.5"
+  resolved "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#31f9be16c72b19c4d6d6b6b56365ef994b3ce06b"
   dependencies:
     ts-interface-checker "^0.1.13"
 
