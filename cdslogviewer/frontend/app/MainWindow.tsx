@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "auto",
     overflow: "hidden",
     gridTemplateColumns: "repeat(20, 5%)",
-    gridTemplateRows: "[top] 200px [info-area] auto [bottom]",
+    gridTemplateRows: "[top] 80px [info-area] auto [bottom]",
     height: "85vh",
     width: "98vw",
   },

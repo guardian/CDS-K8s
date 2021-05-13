@@ -1,12 +1,14 @@
 import React from "react";
 import { render } from "react-dom";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { ThemeProvider, createMuiTheme, CssBaseline } from "@material-ui/core";
+import {ThemeProvider, createMuiTheme, CssBaseline, IconButton} from "@material-ui/core";
 import axios from "axios";
 import MainWindow from "./MainWindow";
 import { Header, AppSwitcher } from "pluto-headers";
+import {Brightness4, Brightness7} from "@material-ui/icons";
+import createCustomisedTheme from "./theming";
 
-const theme = createMuiTheme({
+const darkTheme = createCustomisedTheme({
   typography: {
     fontFamily: [
       "sans-serif",
@@ -19,6 +21,30 @@ const theme = createMuiTheme({
   },
   palette: {
     type: "dark",
+    logviewer: {
+      main: "#00a000",
+      background: "#000000e0"
+    }
+  },
+});
+
+const lightTheme = createCustomisedTheme({
+  typography: {
+    fontFamily: [
+      "sans-serif",
+      '"Helvetica Neue"',
+      "Helvetica",
+      "Arial",
+      "sans-serif",
+    ].join(","),
+    fontWeight: 400,
+  },
+  palette: {
+    type: "light",
+    logviewer: {
+      main: "#008000",
+      background: "#00000020"
+    }
   },
 });
 
@@ -36,13 +62,28 @@ axios.interceptors.request.use(function (config) {
 });
 
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      isDark: true
+    }
+  }
+
   render() {
     return (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={this.state.isDark ? darkTheme : lightTheme}>
         <CssBaseline />
         <Header />
         <AppSwitcher />
         <div className="app">
+          <div style={{float: "right", height: 0}}>
+            <IconButton onClick={()=>this.setState((prev)=>({isDark: !prev.isDark}))}>
+              {
+                this.state.isDark ? <Brightness7/> : <Brightness4/>
+              }
+            </IconButton>
+          </div>
           <Switch>
             <Route path="/" component={MainWindow} />
           </Switch>
