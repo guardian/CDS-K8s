@@ -64,9 +64,9 @@ async function loadMoreLogLines(
       }
 
       const decodedLine = decoder.decode(nextLine.value);
-      decodedLine.split("\n").forEach((actualLine)=>{
+      decodedLine.split("\n").forEach((actualLine) => {
         c += 1;
-        if(actualLine.length>1) logLines.push(actualLine);
+        if (actualLine.length > 1) logLines.push(actualLine);
       });
     }
   } else {
