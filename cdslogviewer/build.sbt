@@ -26,6 +26,10 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
 
+//authentication
+libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "8.21"
+libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
+
 //packaging
 dockerExposedPorts := Seq(9000)
 dockerUsername := sys.props.get("docker.username")

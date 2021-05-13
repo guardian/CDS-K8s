@@ -98,6 +98,7 @@ interface LogSelectorProps {
   className?: string;
   selectionDidChange: (routeName: string, logName: string) => void;
   onError?: (errorDesc: string) => void;
+  onNotLoggedIn?: ()=>void;
   rightColumnExtent: number;
 }
 
@@ -134,6 +135,9 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
       console.error("Could not list known routes: ", err);
       if (props.onError) {
         props.onError(formatError(err, false));
+      }
+      if(err.response && props.onNotLoggedIn){
+        if(err.response.status==403 || err.response.status==401) props.onNotLoggedIn();
       }
     }
   };

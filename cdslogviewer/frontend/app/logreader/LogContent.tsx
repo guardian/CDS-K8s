@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "black",
     color: "green",
     listStyle: "none",
+    height: "90%",
+    marginRight: "1em",
+    overflow: "auto"
   },
   logBlock: {
     fontFamily: ["Courier", "Courier New", "serif"].join(","),

@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Framing, Keep, Sink, Source}
 import akka.util.ByteString
+import auth.{BearerTokenAuth, Security}
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
@@ -14,6 +15,7 @@ import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 import io.circe.generic.auto._
 import io.circe.syntax._
+import play.api.cache.SyncCacheApi
 import play.api.http.HttpEntity
 import play.api.libs.circe.Circe
 import responses.{GenericErrorResponse, LogInfo}
@@ -21,12 +23,17 @@ import responses.{GenericErrorResponse, LogInfo}
 import java.time.ZoneId
 
 @Singleton
-class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(implicit system:ActorSystem, mat:Materializer) extends AbstractController(cc) with Circe {
-  private val logger = LoggerFactory.getLogger(getClass)
+class LogsController @Inject() (cc:ControllerComponents,
+                                override val bearerTokenAuth:BearerTokenAuth,
+                                override implicit val config:Configuration,
+                                override implicit val cache:SyncCacheApi)
+                               (implicit system:ActorSystem, mat:Materializer)
+  extends AbstractController(cc) with Security with Circe {
+  override val logger = LoggerFactory.getLogger(getClass)
   private implicit val ec:ExecutionContext = system.dispatcher
   private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
-  def listRoutes = Action.async {
+  def listRoutes = IsAdminAsync { uid=> request=>
     val path = Paths.get(config.get[String]("cds.logbase"))
     logger.debug(s"Logs base path is $path")
 
@@ -45,7 +52,7 @@ class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(i
       })
   }
 
-  def listLogs(route:String) = Action {
+  def listLogs(route:String) = IsAdmin { uid=> request=>
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, route)
     if(!path.toString.startsWith(base)) {
@@ -65,7 +72,7 @@ class LogsController @Inject() (cc:ControllerComponents, config:Configuration)(i
     }
   }
 
-  def streamLog(route:String, logname:String, fromLine:Long) = Action {
+  def streamLog(route:String, logname:String, fromLine:Long) = IsAdmin { uid=> request=>
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, route, logname)
     if(!path.toString.startsWith(base)) {

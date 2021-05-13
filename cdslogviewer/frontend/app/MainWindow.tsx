@@ -47,6 +47,7 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
   const [lastError, setLastError] = useState<string | undefined>(undefined);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(
     undefined
@@ -69,22 +70,33 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
           <title>CDS Log Viewer</title>
         )}
       </Helmet>
-      <div className={classes.baseGrid}>
-        <div id="info-area" className={classes.infoArea}>
-          <Typography style={{ textAlign: "center" }} variant="h2">
-            Content delivery logs
-          </Typography>
-        </div>
+      {
+        isLoggedIn ?
+            <div className={classes.baseGrid}>
+              <div id="info-area" className={classes.infoArea}>
+                <Typography style={{textAlign: "center"}} variant="h2">
+                  Content delivery logs
+                </Typography>
+              </div>
 
-        <LogSelector
-          selectionDidChange={logSelectionDidChange}
-          className={classes.logSelector}
-          rightColumnExtent={4}
-        />
-        <LogReader className={classes.logContent} selectedLog={selectedLog} />
-      </div>
+              <LogSelector
+                  selectionDidChange={logSelectionDidChange}
+                  className={classes.logSelector}
+                  rightColumnExtent={4}
+                  onNotLoggedIn={() => setIsLoggedIn(false)}
+              />
+              <LogReader className={classes.logContent} selectedLog={selectedLog}/>
+            </div>
+            : <div className={classes.baseGrid}>
+              <div id="info-area" className={classes.infoArea}>
+                <Typography style={{textAlign: "center"}}>
+                  You are either not logged in, or not an administrator. Log in using the button above to continue.
+                </Typography>
+              </div>
+            </div>
+      }
     </>
   );
-};
+}
 
 export default MainWindow;

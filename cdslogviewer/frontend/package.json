@@ -45,7 +45,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^5.2.4",
     "jsonwebtoken": "^8.5.1",
-    "pluto-headers": "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.3.3",
+    "pluto-headers": "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.3.4",
     "process": "^0.11.10",
     "query-string": "6.13.1",
     "react": "^17.0.2",
