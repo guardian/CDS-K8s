@@ -63,8 +63,11 @@ async function loadMoreLogLines(
         };
       }
 
-      c += 1;
-      logLines.push(decoder.decode(nextLine.value));
+      const decodedLine = decoder.decode(nextLine.value);
+      decodedLine.split("\n").forEach((actualLine) => {
+        c += 1;
+        if (actualLine.length > 1) logLines.push(actualLine);
+      });
     }
   } else {
     throw "Server did not return any content";

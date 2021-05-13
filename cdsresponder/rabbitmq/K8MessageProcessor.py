@@ -7,6 +7,7 @@ from kubernetes.client.models.v1_pod import V1Pod
 from kubernetes.client.models.v1_pod_list import V1PodList
 import os
 import k8s.k8utils
+import pathlib
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +99,10 @@ class K8MessageProcessor(MessageProcessor):
 
         pod_list:V1PodList = self.k8core.list_namespaced_pod(job_namespace, label_selector="job-name={0}".format(job_name))
 
+        # ensure path exists
+        destpath = os.path.join(self.pod_log_basepath, job_name)
+        pathlib.Path(destpath).mkdir(parents=True, exist_ok=True)
+
         for pod in pod_list.items:
             filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name + ".log")
             k8s.k8utils.dump_pod_logs(pod.metadata.name, pod.metadata.namespace, filename)
@@ -116,8 +121,12 @@ class K8MessageProcessor(MessageProcessor):
             logger.debug("Got a {0} message for job {1} ({2}) from exchange {3}".format(routing_key, msg.job_name, msg.job_id, exchange_name))
 
             if routing_key == "cds.job.failed" or routing_key == "cds.job.success":
-                saved_logs = self.read_logs(msg.job_name, msg.job_namespace)
-                logger.info("Job {0} terminated, saved {1} pod logs".format(msg.job_name, saved_logs))
+                try:
+                    saved_logs = self.read_logs(msg.job_name, msg.job_namespace)
+                    logger.info("Job {0} terminated, saved {1} pod logs".format(msg.job_name, saved_logs))
+                except Exception as e:
+                    logger.error("Could not save job logs for {0}: {1}".format(msg.job_name, str(e)), exc_info=e)
+
                 if self.should_keep_jobs:
                     logger.info("Retaining job information {0} in cluster as KEEP_JOBS is set to 'true' or 'yes'. Remove it or set to 'no' in order to remove completed jobs.")
                 else:
