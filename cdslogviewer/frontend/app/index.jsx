@@ -1,11 +1,16 @@
 import React from "react";
 import { render } from "react-dom";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import {ThemeProvider, createMuiTheme, CssBaseline, IconButton} from "@material-ui/core";
+import {
+  ThemeProvider,
+  createMuiTheme,
+  CssBaseline,
+  IconButton,
+} from "@material-ui/core";
 import axios from "axios";
 import MainWindow from "./MainWindow";
 import { Header, AppSwitcher } from "pluto-headers";
-import {Brightness4, Brightness7} from "@material-ui/icons";
+import { Brightness4, Brightness7 } from "@material-ui/icons";
 import createCustomisedTheme from "./theming";
 
 const darkTheme = createCustomisedTheme({
@@ -23,8 +28,8 @@ const darkTheme = createCustomisedTheme({
     type: "dark",
     logviewer: {
       main: "#00a000",
-      background: "#000000e0"
-    }
+      background: "#000000e0",
+    },
   },
 });
 
@@ -43,8 +48,8 @@ const lightTheme = createCustomisedTheme({
     type: "light",
     logviewer: {
       main: "#008000",
-      background: "#00000020"
-    }
+      background: "#00000020",
+    },
   },
 });
 
@@ -66,8 +71,8 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      isDark: true
-    }
+      isDark: true,
+    };
   }
 
   render() {
@@ -77,11 +82,13 @@ class App extends React.Component {
         <Header />
         <AppSwitcher />
         <div className="app">
-          <div style={{float: "right", height: 0}}>
-            <IconButton onClick={()=>this.setState((prev)=>({isDark: !prev.isDark}))}>
-              {
-                this.state.isDark ? <Brightness7/> : <Brightness4/>
+          <div style={{ float: "right", height: 0 }}>
+            <IconButton
+              onClick={() =>
+                this.setState((prev) => ({ isDark: !prev.isDark }))
               }
+            >
+              {this.state.isDark ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
           </div>
           <Switch>

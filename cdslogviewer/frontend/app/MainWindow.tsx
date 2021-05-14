@@ -70,33 +70,34 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
           <title>CDS Log Viewer</title>
         )}
       </Helmet>
-      {
-        isLoggedIn ?
-            <div className={classes.baseGrid}>
-              <div id="info-area" className={classes.infoArea}>
-                <Typography style={{textAlign: "center"}} variant="h2">
-                  Content delivery logs
-                </Typography>
-              </div>
+      {isLoggedIn ? (
+        <div className={classes.baseGrid}>
+          <div id="info-area" className={classes.infoArea}>
+            <Typography style={{ textAlign: "center" }} variant="h2">
+              Content delivery logs
+            </Typography>
+          </div>
 
-              <LogSelector
-                  selectionDidChange={logSelectionDidChange}
-                  className={classes.logSelector}
-                  rightColumnExtent={4}
-                  onNotLoggedIn={() => setIsLoggedIn(false)}
-              />
-              <LogReader className={classes.logContent} selectedLog={selectedLog}/>
-            </div>
-            : <div className={classes.baseGrid}>
-              <div id="info-area" className={classes.infoArea}>
-                <Typography style={{textAlign: "center"}}>
-                  You are either not logged in, or not an administrator. Log in using the button above to continue.
-                </Typography>
-              </div>
-            </div>
-      }
+          <LogSelector
+            selectionDidChange={logSelectionDidChange}
+            className={classes.logSelector}
+            rightColumnExtent={4}
+            onNotLoggedIn={() => setIsLoggedIn(false)}
+          />
+          <LogReader className={classes.logContent} selectedLog={selectedLog} />
+        </div>
+      ) : (
+        <div className={classes.baseGrid}>
+          <div id="info-area" className={classes.infoArea}>
+            <Typography style={{ textAlign: "center" }}>
+              You are either not logged in, or not an administrator. Log in
+              using the button above to continue.
+            </Typography>
+          </div>
+        </div>
+      )}
     </>
   );
-}
+};
 
 export default MainWindow;
