@@ -11,9 +11,12 @@ interface LogContentProps {
 
 const useStyles = makeStyles((theme) => ({
   logContainer: {
-    backgroundColor: "black",
-    color: "green",
+    backgroundColor: theme.palette.logviewer.background,
+    color: theme.palette.logviewer.main,
     listStyle: "none",
+    height: "90%",
+    marginRight: "1em",
+    overflow: "auto",
   },
   logBlock: {
     fontFamily: ["Courier", "Courier New", "serif"].join(","),
@@ -26,7 +29,6 @@ const LogContent: React.FC<LogContentProps> = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const classes = useStyles();
 
-  const logLinesRef = useRef(logLines);
   const loadedLineCountRef = useRef<number>();
   loadedLineCountRef.current = loadedLineCount;
 
