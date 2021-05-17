@@ -33,7 +33,7 @@ to do by specifying a route file and some initial metadata.  Previously this was
 Watchman, but that function has been taken over by **cdsresponder**.  Instead of waiting for files to arrive in a directory,
 this receives messages from a rabbitmq exchange and triggers based on those.
 
-![](system%20functions.png)
+![System process diagram](system%20functions.png)
 
 **cdsreaper** receives update messages from the k8s cluster and informs a rabbitmq exchange about them.  **cdsreaper**
 then picks up and acts on these messages.  This split is made so that **cdsreaper** can remain a singleton, therefore
@@ -48,8 +48,25 @@ onto a URL at {pluto}/cds/.
 ## What are the components?
 
 ### cdsresponder
+
+cdsresponder is the "active" part of the software.  It is designed to be scaled as necessary and it listens for messages
+from rabbitmq and responds accordingly.  See the specific readme in the `cdsresponder/` directory for more details.
+
 ### cdsreaper
+
+cdsreaper is designed as a singleton.  It maintains a "watch" on the Kubernetes jobs via the control plane, and receives
+notifications when the state of jobs changes in its namespace.  When this happens, it notifies rabbitmq and then goes back
+to listening again.  The rabbitmq message is picked up by cdsresponder which then handles the processing.
+
+cdsreaper uses an external redis instance as a journal.  Each time a message is processed, a serial number provided by
+Kubernetes is recorded.  The next time it starts up, cdsreaper tries to resume its watch from this number.  Therefore,
+provided the outage time is less than the kubernetes event horizon no messages will get dropped even if cdsreaper has an outage.
+
 ### cdslogviewer
+
+cdslogviewer is a user interface intended for viewing the logs.  It has no direct communication with the other components,
+it simply lists out the log directories and yields the log contents for a viewer when asked.  See the specific readme in the
+`cdslogviewer/` directory for more details.
 
 ## Setting up for Development
 
@@ -73,17 +90,17 @@ lxml documentation for more details.
 
 To work in logviewer, you'll need Java 1.8+ (we use OpenJDK 11) and `sbt` the scala build tool.
 
-### Running locally
+### Running locally (minikube/prexit-local)
 In order to run locally, you'll need a rabbitmq server to talk to and potentially pluto-deliverables to send messages in.
 To run logviewer you'll also need an oauth2 IdP.
 The simplest way to get these is to run minikube and to deploy prexit-local: https://gitlab.com/codmill/customer-projects/guardian/prexit-local.
 
 Follow the setup instructions there, and you'll have an integrated environment with rabbitmq, oauth2 etc.
 
-In the `kube/cds` directory of that repository you'll find deployments for all the components here.  You can deploy them
-immediately, but they will probably get stuck with `ErrImageNeverPull`.  This means that there is no docker image
-available and it's been told not to retrieve one from the internet.  In order to build the images from the local source,
-you need to run:
+In the `kube/cds` directory of that repository you'll find deployments for all the components here, including all the
+configmaps, storage configurations etc. required.  You can deploy them immediately, but they will probably get stuck
+with `ErrImageNeverPull`.  This means that there is no docker image available yet and it's been told not to retrieve one
+from the internet.  In order to build the images from the local source, you need to run:
 
 ```bash
 $ eval $(minikube docker-env)
@@ -101,5 +118,9 @@ container environment.
 
 Once they are built, you should delete the existing running one with `kubectl delete {pod-name}` and wait for your newly
 built version to start up.
+
+If it is not running the right version, use `docker describe pod {podname} | grep image` to check that you are running
+from the correct image name, and check that `eval $(minikube docker-env)` has been run _in your current session_ in order
+to build the images on minikube not your local computer.
 
 Rinse and repeat as you develop...
