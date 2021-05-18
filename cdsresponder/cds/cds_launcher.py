@@ -34,10 +34,10 @@ class CDSLauncher(object):
         logger.info("Startup - we are in namespace {0}".format(self.namespace))
 
     def find_job_template(self):
-        filepath = os.path.join(pathlib.Path(__name__).parent.absolute(), "templates","cdsjob.yaml")
+        filepath = os.path.join(os.getenv("TEMPLATES_PATH"), "cdsjob.yaml")
         if os.path.exists(filepath):
             return filepath
-        filepath = os.path.join(os.getenv("TEMPLATES_PATH"), "cdsjob.yaml")
+        filepath = os.path.join(pathlib.Path(__name__).parent.absolute(), "templates","cdsjob.yaml")
         if os.path.exists(filepath):
             return filepath
         filepath = "/etc/cdsresponder/templates/cdsjob.yaml"

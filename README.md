@@ -124,3 +124,11 @@ from the correct image name, and check that `eval $(minikube docker-env)` has be
 to build the images on minikube not your local computer.
 
 Rinse and repeat as you develop...
+
+## Deploying for real
+
+### Supplying the routes
+
+### Supplying the templates
+
+###
