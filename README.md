@@ -127,8 +127,90 @@ Rinse and repeat as you develop...
 
 ## Deploying for real
 
+When making a real deployment, you actually have to provide the configuration elements that CDS itself expects as well
+as deploying the framework here.  So here is a checklist for things that must be present in order for CDS to operate.
+
+### Responder template
+
+CDS is run as a job.  In order to configure this, cdsresponder expects a YAML template to be present at `cdsjob.yaml`.
+An example is at https://gitlab.com/codmill/customer-projects/guardian/prexit-local/-/blob/master/kube/cds/responder-templates.yaml.
+You can see that the Kubernetes job manifest is contained as a payload _within_ a ConfigMap.
+
+This allows any arbitary configuration of the CDS job to be performed.  cdsresponder will override the "command" and
+"labels" parameters but keep everything else the same.  For more details on the options available consult
+https://kubernetes.io/docs/concepts/workloads/controllers/job/.
+
+The prexit-local version of cdsjob.yaml has a bare minimum of required configuration.  The deployed one, which is kept
+in the on-premesis secure deployment repo, is more comprehensive.
+
+The responder template can be tested as follows:
+
+- copy the contents of the `cdsjob.yaml` key into its own yaml file
+- replace `command: ["/usr/local/bin/cds_run.pl"]` with `command: ["/bin/sleep","3600"]`
+- submit to the cluster: `kubectl apply -f {yaml-file}.yaml`
+- the job will now stay in a "running" state for 1 hour (3600 seconds).  In the meantime, you can find the pod that
+is running via `kubectl get pods | grep cds-job` (it should be called `cds-job-template-{something}`) and enter into it
+in order to inspect the environment: `kubectl exec -it {podname} -- /bin/bash`.
+- make any changes, delete the job and re-submit it to check: `kubectl delete -f {yaml-file}.yaml; kubectl apply -f {yaml-file.yaml}`.
+- etc. etc.
+
 ### Supplying the routes
+
+CDS expects XML format route files to be present in the folder `/etc/cds_backend/routes`.  The simplest way to provide
+this is to bundle the xml files up into a ConfigMap and mount it at this folder location.  
+
+It's a pain to edit and verify xml when it is held within a yaml file though, so a script is provided called `generate-routes-config.py`.
+This allows you to create a ConfigMap from a directory of files - similar to kubectl but a bit easier to use.
+It _also_ has the option to validate and pretty-format the XML files before outputting them to the configmap, which
+makes the final result a lot easier to read.  Run `./generate-routes-config.py --help` for more details (python 3.x required)
+
+You need to make sure that the `metadata.name` field of the resulting config map matches the `volumes[].configMap.name`
+parameter in the `cdsjob.yaml` file in order for the cluster to mount the routes in the right place.
 
 ### Supplying the templates
 
-###
+If you are performing metadata translations, you'll need templates to tell `metaxform` how to adapt the metadata.
+These are normally present at `/etc/cds_backend/templates`.  Again this is best provided through a configmap, and again
+`generate-routes-config.py` is the easiest way of generating this configmap.  This time though, don't use the xml validation/
+pretty-print function unless _all_ of your templates are meant to be valid XML in their raw format.
+
+Again, this configmap is provided to cdsrun through the `cdsjob.yaml` file.
+
+### Supplying input metadata
+
+Input metadata is extracted from a message queue and validated by cdsresponder.  However, cds_run expects to find a file
+containing xml metadata in order to read it.  This can be present anywhere in the filesystem, and is indicated to cds_run
+via the `--input-inmeta` commandline option when it is launched.  This option is supplied by cdsresponder when it over-writes
+the template command (see `cdsresponder/cds/cds_launcher.py`).  cdsresponder will output a file to the location given by the
+`INMETA_PATH` environment variable that is set in its container.
+
+A shared persistent volume claim is the simplest way of enabling cdsresponder to write the file so cds_run can pick it up.
+The PVC should be mounted at the same filesystem path in both the cds_run job container and the cdsresponder deployment container
+so the paths are compatible.  NFS is a suitable storage medium choice for this; in prexit-local (minikube) a simple "localstorage"
+provisioner is used.
+
+### Temporary data paths
+
+In addition, cds_run needs somewhere to store its in-progress datastore.  This is small and only needed for the life of the job,
+so a memory-backed tmpfs mount is suitable.  This is expected to be present at `/var/spool/cds_backend`.
+Some methods (e.g. image downloading/cropping) also require local scratch storage to be available.  In the "full" deployment
+another tmpfs is present at `/scratch`
+
+### Per-environment configuration
+
+CDS supports per-environment configuration files which it expects to find in /etc/cds_backend/conf.d.  These are optional,
+`key=value` format files whose contents can be accessed via the `{config:keyname}` substitution in a route file.
+If you're using these, just like the templates and routes, they should be packaged into a configmap and mounted at /etc/cds_backend/conf.d.
+
+### Accessing the logs
+
+cds_run outputs logs to `/var/log/cds_backend/{routename}/{filename}.log`.  This should be another shared storage, e.g.
+NFS (or local provisioner in minikube).  This storage should also be mounted by `cdslogviewer`, which offers auto-updating
+viewing of the logs from the comfort of your web-browser
+
+### Media
+
+Finally, don't forget your media storage!  CDS will probably require at least read-only access to your storage in order
+to locate the media and upload it.  SAN mounts are most easily propagated to the CDS job by having them mounted on the
+kubernetes node itself and then using a `hostPath` mount to make them visible to the container
+
