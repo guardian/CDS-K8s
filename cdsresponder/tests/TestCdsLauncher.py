@@ -13,3 +13,16 @@ class TestCDSLauncher(TestCase):
 
         self.assertLessEqual(len(sanitised), 59)
         self.assertFalse(re.match(r"\s", sanitised))
+
+    def test_sanitise_job_name_startend(self):
+        """
+        a valid job name must start and end with an alphanumeric char
+        :return:
+        """
+        from cds.cds_launcher import CDSLauncher
+        test_name = "! Read this, because it's very important! "
+        sanitised = CDSLauncher.sanitise_job_name(test_name)
+        self.assertEqual(sanitised, "read-this-because-its-very-important")
+
+        another_test_name = "! Read this again, time 2.  "
+        self.assertEqual(CDSLauncher.sanitise_job_name(another_test_name), "read-this-again-time-2")
