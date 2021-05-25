@@ -26,3 +26,8 @@ class TestCDSLauncher(TestCase):
 
         another_test_name = "! Read this again, time 2.  "
         self.assertEqual(CDSLauncher.sanitise_job_name(another_test_name), "read-this-again-time-2")
+
+        long_test_name = "this is a very long test name which is not going to get th in its entirety, because it is really too long"
+        sanitised = CDSLauncher.sanitise_job_name(long_test_name)
+
+        self.assertEqual(sanitised, "this-is-a-very-long-test-name-which-is-not-going-to-get-th")
