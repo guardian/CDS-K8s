@@ -73,7 +73,12 @@ class CDSLauncher(object):
 
     @staticmethod
     def sanitise_job_name(job_name:str) -> str:
-        return re.sub(r'[^A-Za-z0-9-]', "", job_name).lower()
+        first_sub = re.sub(r"\s+","-", job_name)
+        second_sub = re.sub(r'[^A-Za-z0-9-]', "", first_sub).lower()
+        if len(second_sub) <= 59:   #kubernetes name length is 63 chars, we prepend "cds-" so take that off
+            return second_sub
+        else:
+            return second_sub[0:59]
 
     def launch_cds_job(self, inmeta_path: str, job_name: str, route_name: str, labels:dict) -> kubernetes.client.models.V1Job:
         command_parts = [
