@@ -160,7 +160,7 @@ class UploadRequestedProcessor(MessageProcessor):
             "archive-id": self.make_safe_label(str(body["archive_id"])) if "archive_id" in body else "None",
         }
 
-        inmeta_file = self.write_out_inmeta(filename_hint, body["inmeta"])
+        inmeta_file = self.write_out_inmeta(self.launcher.sanitise_job_name(filename_hint), body["inmeta"])
         job_name = "cds-{0}-{1}".format(filename_hint, self.randomstring(4))
         try:
             result = self.launcher.launch_cds_job(inmeta_file, job_name, body["routename"], labels)
