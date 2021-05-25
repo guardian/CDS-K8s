@@ -160,6 +160,7 @@ class TestUploadRequestedProcessor(TestCase):
         """
         mocked_launcher = MagicMock(target=cds.cds_launcher.CDSLauncher)
         mocked_launcher.launch_cds_job = MagicMock()
+        mocked_launcher.sanitise_job_name = MagicMock(return_value="sanitised-job-name")
         mocked_channel = MagicMock(target=pika.channel.Channel)
         mocked_channel.basic_publish = MagicMock()
 
@@ -178,7 +179,7 @@ class TestUploadRequestedProcessor(TestCase):
 
             to_test.valid_message_receive(mocked_channel, "some-exchange","routing.key","2345",fake_message)
             to_test.validate_inmeta.assert_called_once_with(fake_message["inmeta"])
-            to_test.write_out_inmeta.assert_called_once_with("somefile.mxf", fake_message["inmeta"])
+            to_test.write_out_inmeta.assert_called_once_with("sanitised-job-name", fake_message["inmeta"])
             mocked_launcher.launch_cds_job.assert_called_once()
             self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][0], "/path/to/mdpacket.inmeta")
             self.assertEqual(mocked_launcher.launch_cds_job.call_args[0][2], fake_message["routename"])
