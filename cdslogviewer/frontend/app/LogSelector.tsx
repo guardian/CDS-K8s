@@ -12,7 +12,7 @@ import {
 import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
 import clsx from "clsx";
-import {useHistory, useParams} from "react-router";
+import { useHistory, useParams } from "react-router";
 
 interface LogLabelProps {
   label: string;
@@ -123,23 +123,30 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   const [selected, setSelected] = React.useState<string[]>([]);
   const classes = useStyles();
 
-  const { routename, podname } = useParams<{routename:string|undefined, podname:string|undefined}>();
+  const { routename, podname } = useParams<{
+    routename: string | undefined;
+    podname: string | undefined;
+  }>();
   const history = useHistory();
-
 
   useEffect(() => {
     loadKnownRoutes();
   }, []);
 
   useEffect(() => {
-    if(knownRoutes.length>0) {
-      console.log("logSelector: updated routename is ", routename, " routes are ", knownRoutes);
+    if (knownRoutes.length > 0) {
+      console.log(
+        "logSelector: updated routename is ",
+        routename,
+        " routes are ",
+        knownRoutes
+      );
       if (routename) setExpanded([routename]);
     }
   }, [routename, knownRoutes]);
 
   useEffect(() => {
-    if(knownRoutes.length>0) {
+    if (knownRoutes.length > 0) {
       console.log("logSelector: updated podname is ", podname);
       if (podname) setSelected([podname]);
     }
@@ -165,7 +172,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
 
   const logSelectionDidChange = (routeName: string, logName: string) => {
     console.log("Selected ", logName, " from ", routeName);
-    history.push(`/log/${routeName}/${logName}`)
+    history.push(`/log/${routeName}/${logName}`);
   };
 
   const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {

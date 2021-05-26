@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {RouteComponentProps, useParams} from "react-router";
+import React, { useEffect, useState } from "react";
+import { RouteComponentProps, useParams } from "react-router";
 import { makeStyles, Typography } from "@material-ui/core";
 import LogSelector from "./LogSelector";
 import LogReader from "./LogReader";
