@@ -12,6 +12,7 @@ import {
 import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
 import clsx from "clsx";
+import {useHistory, useParams} from "react-router";
 
 interface LogLabelProps {
   label: string;
@@ -96,7 +97,6 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
 
 interface LogSelectorProps {
   className?: string;
-  selectionDidChange: (routeName: string, logName: string) => void;
   onError?: (errorDesc: string) => void;
   onNotLoggedIn?: () => void;
   rightColumnExtent: number;
@@ -121,6 +121,10 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const classes = useStyles();
 
+  const { routename, podname } = useParams<{routename:string|undefined, podname:string|undefined}>();
+  const history = useHistory();
+
+  console.log("logSelector: requestedRouteName is ", routename)
   useEffect(() => {
     loadKnownRoutes();
   }, []);
@@ -143,6 +147,11 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
     }
   };
 
+  const logSelectionDidChange = (routeName: string, logName: string) => {
+    console.log("Selected ", logName, " from ", routeName);
+    history.push(`/log/${routeName}/${logName}`)
+  };
+
   return (
     <ul className={clsx(props.className, classes.container)}>
       <li>
@@ -161,7 +170,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
         <TreeView
           defaultExpandIcon={<ExpandMore />}
           defaultCollapseIcon={<ChevronRight />}
-          defaultExpanded={[]}
+          defaultExpanded={routename ? [routename] : []}
         >
           {knownRoutes.length == 0 ? (
             <Typography variant="caption">No routes loaded</Typography>
@@ -170,7 +179,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
               <RouteEntry
                 routeName={name}
                 key={idx}
-                logWasSelected={props.selectionDidChange}
+                logWasSelected={logSelectionDidChange}
                 loadingStatusChanged={(newStatus) => setIsLoading(newStatus)}
               />
             ))
