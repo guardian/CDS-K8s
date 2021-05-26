@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 class IndexController @Inject() (cc:ControllerComponents, config:Configuration) extends AbstractController(cc) {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def index = Action {
+  def index(any:String) = Action {
     val cbVersionString = Try {
       val prop = new Properties()
       prop.load(getClass.getClassLoader.getResourceAsStream("version.properties"))
@@ -25,5 +25,6 @@ class IndexController @Inject() (cc:ControllerComponents, config:Configuration) 
     Ok(views.html.index(cbVersionString.getOrElse("none"), config.getOptional[String]("deployment-root").getOrElse("")))
   }
 
+  def root = index("")
 
 }

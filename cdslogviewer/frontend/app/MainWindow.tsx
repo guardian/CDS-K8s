@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { RouteComponentProps } from "react-router";
+import React, {useEffect, useState} from "react";
+import {RouteComponentProps, useParams} from "react-router";
 import { makeStyles, Typography } from "@material-ui/core";
 import LogSelector from "./LogSelector";
 import LogReader from "./LogReader";
@@ -53,14 +53,6 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
     undefined
   );
 
-  const logSelectionDidChange = (routeName: string, logName: string) => {
-    console.log("Selected ", logName, " from ", routeName);
-    setSelectedLog({
-      route: routeName,
-      logName: logName,
-    });
-  };
-
   return (
     <>
       <Helmet>
@@ -79,12 +71,11 @@ const MainWindow: React.FC<RouteComponentProps> = (props) => {
           </div>
 
           <LogSelector
-            selectionDidChange={logSelectionDidChange}
             className={classes.logSelector}
             rightColumnExtent={4}
             onNotLoggedIn={() => setIsLoggedIn(false)}
           />
-          <LogReader className={classes.logContent} selectedLog={selectedLog} />
+          <LogReader className={classes.logContent} />
         </div>
       ) : (
         <div className={classes.baseGrid}>
