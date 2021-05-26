@@ -37,7 +37,7 @@ const LogLabel: React.FC<LogLabelProps> = (props) => {
 
 interface RouteEntryProps {
   routeName: string;
-  key: any;
+  childKey: any;
   onError?: (errDesc: string) => void;
   logWasSelected: (routeName: string, logName: string) => void;
   loadingStatusChanged: (loadingStatus: boolean) => void;
@@ -76,7 +76,7 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
     <TreeItem
       nodeId={props.routeName}
       label={props.routeName}
-      key={props.key}
+      key={props.childKey}
       expandIcon={<ChevronRight />}
       endIcon={<ChevronRight />}
       onIconClick={handleToggle}
@@ -119,15 +119,31 @@ const useStyles = makeStyles((theme) => ({
 const LogSelector: React.FC<LogSelectorProps> = (props) => {
   const [knownRoutes, setKnownRoutes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expanded, setExpanded] = React.useState<string[]>([]);
+  const [selected, setSelected] = React.useState<string[]>([]);
   const classes = useStyles();
 
   const { routename, podname } = useParams<{routename:string|undefined, podname:string|undefined}>();
   const history = useHistory();
 
-  console.log("logSelector: requestedRouteName is ", routename)
+
   useEffect(() => {
     loadKnownRoutes();
   }, []);
+
+  useEffect(() => {
+    if(knownRoutes.length>0) {
+      console.log("logSelector: updated routename is ", routename, " routes are ", knownRoutes);
+      if (routename) setExpanded([routename]);
+    }
+  }, [routename, knownRoutes]);
+
+  useEffect(() => {
+    if(knownRoutes.length>0) {
+      console.log("logSelector: updated podname is ", podname);
+      if (podname) setSelected([podname]);
+    }
+  }, [podname, knownRoutes]);
 
   const loadKnownRoutes = async () => {
     try {
@@ -152,6 +168,16 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
     history.push(`/log/${routeName}/${logName}`)
   };
 
+  const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+    setExpanded(nodeIds);
+  };
+
+  const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+    setSelected(nodeIds);
+  };
+
+  console.log("render: expanded is ", expanded);
+
   return (
     <ul className={clsx(props.className, classes.container)}>
       <li>
@@ -170,7 +196,10 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
         <TreeView
           defaultExpandIcon={<ExpandMore />}
           defaultCollapseIcon={<ChevronRight />}
-          defaultExpanded={routename ? [routename] : []}
+          expanded={expanded}
+          selected={selected}
+          onNodeToggle={handleToggle}
+          onNodeSelect={handleSelect}
         >
           {knownRoutes.length == 0 ? (
             <Typography variant="caption">No routes loaded</Typography>
@@ -178,6 +207,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
             knownRoutes.map((name, idx) => (
               <RouteEntry
                 routeName={name}
+                childKey={idx}
                 key={idx}
                 logWasSelected={logSelectionDidChange}
                 loadingStatusChanged={(newStatus) => setIsLoading(newStatus)}
