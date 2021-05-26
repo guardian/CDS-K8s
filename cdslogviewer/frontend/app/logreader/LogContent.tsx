@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { makeStyles, Select, Typography } from "@material-ui/core";
+import {
+  FormControlLabel,
+  makeStyles,
+  Switch,
+  Typography,
+} from "@material-ui/core";
 import { loadMoreLogLines } from "../data-loading";
 import { parseISO, formatDistanceToNow, isFuture } from "date-fns";
 
@@ -29,8 +34,10 @@ const LogContent: React.FC<LogContentProps> = (props) => {
   const [logLines, setLogLines] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastModified, setLastModified] = useState<Date | undefined>(undefined);
-
+  const [scrollToBottom, setScrollToBottom] = useState(true);
   const classes = useStyles();
+
+  let logEnd: HTMLDivElement | null = null;
 
   const loadedLineCountRef = useRef<number>();
   loadedLineCountRef.current = loadedLineCount;
@@ -84,6 +91,15 @@ const LogContent: React.FC<LogContentProps> = (props) => {
       });
   };
 
+  /**
+   * if the user wants us to, scroll to the end of the log whenever the log lines change or when they check 'Keep in view'
+   */
+  useEffect(() => {
+    if (scrollToBottom && logEnd) {
+      logEnd.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [logLines, scrollToBottom]);
+
   const lastModifiedString = () => {
     if (lastModified) {
       let timestr;
@@ -100,11 +116,26 @@ const LogContent: React.FC<LogContentProps> = (props) => {
 
   return (
     <>
+      <FormControlLabel
+        label="Keep end of log in view"
+        control={
+          <Switch
+            checked={scrollToBottom}
+            onChange={(evt) => setScrollToBottom(evt.target.checked)}
+          />
+        }
+      />
       <Typography>
         Auto-refresh is enabled for the log. {lastModifiedString()}
       </Typography>
       <div className={classes.logContainer}>
         <pre className={classes.logBlock}>{logLines.join("\n")}</pre>
+        <div
+          style={{ float: "left", clear: "both" }}
+          ref={(el) => {
+            logEnd = el;
+          }}
+        />
       </div>
     </>
   );
