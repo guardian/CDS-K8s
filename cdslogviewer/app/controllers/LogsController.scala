@@ -20,7 +20,9 @@ import play.api.http.HttpEntity
 import play.api.libs.circe.Circe
 import responses.{GenericErrorResponse, LogInfo}
 
-import java.time.ZoneId
+import java.nio.file.attribute.PosixFileAttributeView
+import java.time.format.DateTimeFormatter
+import java.time.{ZoneId, ZonedDateTime}
 
 @Singleton
 class LogsController @Inject() (cc:ControllerComponents,
@@ -81,6 +83,9 @@ class LogsController @Inject() (cc:ControllerComponents,
       NotFound(GenericErrorResponse("not_found","The given log file does not exist").asJson)
     } else {
       try {
+        val view = Files.getFileAttributeView(path, classOf[PosixFileAttributeView])
+        val modTime = ZonedDateTime.ofInstant(view.readAttributes().lastModifiedTime().toInstant, tz)
+
         val stream = FileIO.fromPath(path)
           .via(Framing.delimiter(ByteString("\n"), 32768, true))
           .drop(fromLine)
@@ -88,7 +93,7 @@ class LogsController @Inject() (cc:ControllerComponents,
         //setting Content-Length to the length of the file does not make sense, since we may have skipped an unknown
         //number of characters if fromLine != 0
         Result(
-          header = ResponseHeader(200, Map.empty),
+          header = ResponseHeader(200, Map("X-Logfile-Modified"->modTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))),
           body = HttpEntity.Streamed(stream, None, Some("text/plain"))
         )
       } catch {

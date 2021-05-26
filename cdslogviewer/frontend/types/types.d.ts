@@ -19,7 +19,7 @@ interface SelectedLog {
 interface LogLines {
     content: string[];
     count: number;
-
+    lastModified: string|null;
 }
 
 
