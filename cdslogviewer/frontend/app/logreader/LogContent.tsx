@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { makeStyles, Select } from "@material-ui/core";
+import { makeStyles, Select, Typography } from "@material-ui/core";
 import { loadMoreLogLines } from "../data-loading";
+import { parseISO, formatDistanceToNow, isFuture } from "date-fns";
 
 interface LogContentProps {
   routeName: string;
@@ -27,6 +28,8 @@ const LogContent: React.FC<LogContentProps> = (props) => {
   const [loadedLineCount, setLoadedLineCount] = useState(0);
   const [logLines, setLogLines] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastModified, setLastModified] = useState<Date | undefined>(undefined);
+
   const classes = useStyles();
 
   const loadedLineCountRef = useRef<number>();
@@ -55,6 +58,18 @@ const LogContent: React.FC<LogContentProps> = (props) => {
     )
       .then((results) => {
         setIsLoading(false);
+        if (results.lastModified) {
+          try {
+            setLastModified(parseISO(results.lastModified));
+          } catch (e) {
+            console.error(
+              "Could not parse last modified string ",
+              results.lastModified,
+              ": ",
+              e
+            );
+          }
+        }
         if (results.count > 0) {
           console.log(`Received ${results.count} more log lines`);
           setLoadedLineCount((prevValue) => prevValue + results.count);
@@ -69,10 +84,29 @@ const LogContent: React.FC<LogContentProps> = (props) => {
       });
   };
 
+  const lastModifiedString = () => {
+    if (lastModified) {
+      let timestr;
+      if (isFuture(lastModified)) {
+        timestr = `is in ${formatDistanceToNow(lastModified)}`;
+      } else {
+        timestr = `was ${formatDistanceToNow(lastModified)} ago`;
+      }
+      return `Last update ${timestr}`;
+    } else {
+      return "";
+    }
+  };
+
   return (
-    <div className={classes.logContainer}>
-      <pre className={classes.logBlock}>{logLines.join("\n")}</pre>
-    </div>
+    <>
+      <Typography>
+        Auto-refresh is enabled for the log. {lastModifiedString()}
+      </Typography>
+      <div className={classes.logContainer}>
+        <pre className={classes.logBlock}>{logLines.join("\n")}</pre>
+      </div>
+    </>
   );
 };
 

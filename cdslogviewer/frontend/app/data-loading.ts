@@ -1,7 +1,6 @@
 import ndjsonStream from "can-ndjson-stream";
 import { authenticatedFetch } from "./common/authenticated_fetch";
 import { Simulate } from "react-dom/test-utils";
-import error = Simulate.error;
 
 async function loadLogsForRoute(
   routeName: string,
@@ -60,6 +59,7 @@ async function loadMoreLogLines(
         return {
           content: logLines,
           count: c,
+          lastModified: response.headers.get("x-logfile-modified"),
         };
       }
 

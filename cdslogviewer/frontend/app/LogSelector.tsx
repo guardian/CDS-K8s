@@ -2,11 +2,19 @@ import React, { useState, useEffect } from "react";
 import { TreeItem, TreeItemClassKey, TreeView } from "@material-ui/lab";
 import axios from "axios";
 import { formatError } from "./common/format_error";
-import { ChevronRight, ExpandMore } from "@material-ui/icons";
+import {
+  ArrowDropDown,
+  ChevronRight,
+  ExpandMore,
+  KeyboardArrowDown,
+  Replay,
+} from "@material-ui/icons";
 import {
   CircularProgress,
   Grid,
+  IconButton,
   makeStyles,
+  setRef,
   Typography,
 } from "@material-ui/core";
 import { loadLogsForRoute } from "./data-loading";
@@ -38,6 +46,7 @@ const LogLabel: React.FC<LogLabelProps> = (props) => {
 interface RouteEntryProps {
   routeName: string;
   childKey: any;
+  refreshGeneration: number;
   onError?: (errDesc: string) => void;
   logWasSelected: (routeName: string, logName: string) => void;
   loadingStatusChanged: (loadingStatus: boolean) => void;
@@ -46,6 +55,18 @@ interface RouteEntryProps {
 const RouteEntry: React.FC<RouteEntryProps> = (props) => {
   const [childLogs, setChildLogs] = useState<LogInfo[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (props.refreshGeneration > 0) {
+      //we are called on initial load, which is handled below
+      setChildLogs([]);
+      loadLogsForRoute(props.routeName, (newData) =>
+        setChildLogs((prevState) => prevState.concat(newData))
+      ).catch((err) => {
+        console.log("Could not load in logs for ", props.routeName, ": ", err);
+      });
+    }
+  }, [props.refreshGeneration]);
 
   const handleToggle = (evt: React.MouseEvent<Element, MouseEvent>) => {
     if (!isLoaded) {
@@ -78,6 +99,7 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
       label={props.routeName}
       key={props.childKey}
       expandIcon={<ChevronRight />}
+      collapseIcon={<KeyboardArrowDown />}
       endIcon={<ChevronRight />}
       onIconClick={handleToggle}
       onLabelClick={handleToggle}
@@ -85,7 +107,6 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
       {childLogs.map((info, idx) => (
         <TreeItem
           nodeId={info.name}
-          //label={<Typography>{info.name} {formatBytes(info.size)}</Typography>}
           label={<LogLabel label={info.name} size={info.size} />}
           key={idx}
           onLabelClick={() => props.logWasSelected(props.routeName, info.name)}
@@ -114,13 +135,18 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     overflowX: "hidden",
   },
+  spinner: {
+    animation: "1.5s linear infinite spinner",
+  },
 }));
 
 const LogSelector: React.FC<LogSelectorProps> = (props) => {
   const [knownRoutes, setKnownRoutes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expanded, setExpanded] = React.useState<string[]>([]);
-  const [selected, setSelected] = React.useState<string[]>([]);
+  const [selected, setSelected] = React.useState<string>("");
+  const [refreshGeneration, setRefreshGeneration] = useState(0);
+
   const classes = useStyles();
 
   const { routename, podname } = useParams<{
@@ -148,7 +174,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   useEffect(() => {
     if (knownRoutes.length > 0) {
       console.log("logSelector: updated podname is ", podname);
-      if (podname) setSelected([podname]);
+      if (podname) setSelected(podname);
     }
   }, [podname, knownRoutes]);
 
@@ -179,11 +205,23 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
     setExpanded(nodeIds);
   };
 
-  const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+  const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string) => {
     setSelected(nodeIds);
   };
 
-  console.log("render: expanded is ", expanded);
+  console.log(
+    "render: expanded is ",
+    expanded,
+    " known routes are ",
+    knownRoutes
+  );
+
+  const refreshLogSelector = async () => {
+    setIsLoading(true);
+    await loadKnownRoutes();
+    setRefreshGeneration((prev) => prev + 1);
+    setIsLoading(false);
+  };
 
   return (
     <ul className={clsx(props.className, classes.container)}>
@@ -193,9 +231,9 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
             <Typography variant="h4">Jobs</Typography>
           </Grid>
           <Grid item>
-            {isLoading ? (
-              <CircularProgress className={classes.progressIndicator} />
-            ) : null}
+            <IconButton onClick={refreshLogSelector}>
+              <Replay className={isLoading ? classes.spinner : undefined} />
+            </IconButton>
           </Grid>
         </Grid>
       </li>
@@ -214,6 +252,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
             knownRoutes.map((name, idx) => (
               <RouteEntry
                 routeName={name}
+                refreshGeneration={refreshGeneration}
                 childKey={idx}
                 key={idx}
                 logWasSelected={logSelectionDidChange}

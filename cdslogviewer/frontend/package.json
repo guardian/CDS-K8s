@@ -44,6 +44,7 @@
     "can-ndjson-stream": "^1.0.2",
     "crypto-browserify": "^3.12.0",
     "css-loader": "^5.2.4",
+    "date-fns": "^2.21.3",
     "jsonwebtoken": "^8.5.1",
     "pluto-headers": "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.3.6",
     "process": "^0.11.10",
@@ -65,6 +66,7 @@
     "webpack-cli": "^4.6.0"
   },
   "devDependencies": {
+    "@types/date-fns": "^2.6.0",
     "@types/jest": "^26.0.23",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.1",
     "enzyme": "^3.11.0",
