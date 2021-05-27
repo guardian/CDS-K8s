@@ -8,9 +8,8 @@ import Helmet from "react-helmet";
 const useStyles = makeStyles((theme) => ({
   baseGrid: {
     display: "grid",
-    margin: "1em",
-    marginLeft: "auto",
-    marginRight: "auto",
+    paddingLeft: "1em",
+    paddingRight: "1em",
     overflow: "hidden",
     gridTemplateColumns: "repeat(20, 5%)",
     gridTemplateRows: "[top] 80px [info-area] auto [bottom]",
