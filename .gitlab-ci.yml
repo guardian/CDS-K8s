@@ -137,6 +137,20 @@ logviewer-upload:
     - if [ -d ".cache" ]; then rm -rf ${HOME}/.cache; mv .cache ${HOME}; fi
     - if [ ! -d "junit-tests" ]; then mkdir junit-tests; fi
     - sbt docker:publish
+    - "echo ci_commit_branch: ${CI_COMMIT_BRANCH} >> build-info.yaml"
+    - "echo ci_commit_ref_name: ${CI_COMMIT_REF_NAME} >> build-info.yaml"
+    - "echo ci_commit_sha: ${CI_COMMIT_SHA} >> build-info.yaml"
+    - "echo ci_commit_timestamp: ${CI_COMMIT_TIMESTAMP} >> build-info.yaml"
+    - "echo ci_commit_title: ${CI_COMMIT_TITLE} >> build-info.yaml"
+    - "echo ci_job_url: ${CI_JOB_URL} >> build-info.yaml"
+    - "echo ci_project_name: ${CI_PROJECT_NAME} >> build-info.yaml"
+    - "echo ci_merge_request_project_url: ${CI_MERGE_REQUEST_PROJECT_URL} >> build-info.yaml"
+    - "echo ci_merge_request_title: ${CI_MERGE_REQUEST_TITLE} >> build-info.yaml"
+    - "echo ci_pipeline_iid: ${CI_PIPELINE_IID} >> build-info.yaml"
+    - "echo built_image: guardianmultimedia/cdslogviewer:$CI_PIPELINE_IID >> build-info.yaml"
+  artifacts:
+    paths:
+      - build-info.yaml
   cache:
     key: ${CI_COMMIT_REF_SLUG}-sbt
     paths:
@@ -160,6 +174,20 @@ uploads:
     - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
     - docker push guardianmultimedia/cdsresponder:$CI_PIPELINE_IID
     - docker push guardianmultimedia/cdsreaper:$CI_PIPELINE_IID
+    - "echo ci_commit_branch: ${CI_COMMIT_BRANCH} >> build-info.yaml"
+    - "echo ci_commit_ref_name: ${CI_COMMIT_REF_NAME} >> build-info.yaml"
+    - "echo ci_commit_sha: ${CI_COMMIT_SHA} >> build-info.yaml"
+    - "echo ci_commit_timestamp: ${CI_COMMIT_TIMESTAMP} >> build-info.yaml"
+    - "echo ci_commit_title: ${CI_COMMIT_TITLE} >> build-info.yaml"
+    - "echo ci_job_url: ${CI_JOB_URL} >> build-info.yaml"
+    - "echo ci_project_name: ${CI_PROJECT_NAME} >> build-info.yaml"
+    - "echo ci_merge_request_project_url: ${CI_MERGE_REQUEST_PROJECT_URL} >> build-info.yaml"
+    - "echo ci_merge_request_title: ${CI_MERGE_REQUEST_TITLE} >> build-info.yaml"
+    - "echo ci_pipeline_iid: ${CI_PIPELINE_IID} >> build-info.yaml"
+    - "echo built_image: guardianmultimedia/cdsresponder:$CI_PIPELINE_IID >> build-info.yaml"
+  artifacts:
+    paths:
+      - build-info.yaml
   tags:
     - gnm
     - docker
