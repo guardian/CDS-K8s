@@ -111,7 +111,7 @@ class K8MessageProcessor(MessageProcessor):
 
     def safe_delete_job(self, job_name:str, job_namespace:str):
         try:
-            self.batch.delete_namespaced_job(job_name, job_namespace)
+            self.batch.delete_namespaced_job(job_name, job_namespace, propagation_policy='Foreground')
         except Exception as e:
             logger.error("Could not remove the job {0} from namespace {1}: {2}".format(job_name, job_namespace, str(e)))
 

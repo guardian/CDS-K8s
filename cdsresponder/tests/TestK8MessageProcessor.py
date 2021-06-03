@@ -181,7 +181,7 @@ class TestK8MessageProcessor(TestCase):
         processor.batch.delete_namespaced_job = MagicMock()
 
         processor.safe_delete_job("some-job", "some-namespace")
-        processor.batch.delete_namespaced_job.assert_called_once_with("some-job", "some-namespace")
+        processor.batch.delete_namespaced_job.assert_called_once_with("some-job", "some-namespace", propagation_policy='Foreground')
 
     def test_safe_delete_job_error(self):
         """
@@ -193,4 +193,4 @@ class TestK8MessageProcessor(TestCase):
         processor.batch.delete_namespaced_job = MagicMock(side_effect=kubernetes.client.exceptions.ApiException)
 
         processor.safe_delete_job("some-job", "some-namespace")
-        processor.batch.delete_namespaced_job.assert_called_once_with("some-job", "some-namespace")
+        processor.batch.delete_namespaced_job.assert_called_once_with("some-job", "some-namespace", propagation_policy='Foreground')
