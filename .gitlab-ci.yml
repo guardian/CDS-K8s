@@ -150,7 +150,7 @@ logviewer-upload:
     - "echo built_image: guardianmultimedia/cdslogviewer:$CI_PIPELINE_IID >> build-info.yaml"
   artifacts:
     paths:
-      - build-info.yaml
+      - cdslogviewer/build-info.yaml
   cache:
     key: ${CI_COMMIT_REF_SLUG}-sbt
     paths:
