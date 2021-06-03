@@ -133,6 +133,9 @@ class JobWatcher(object):
                                         resource_version=resource_version):
                 logger.debug("Received job event: {0}".format(event['type']))
                 if isinstance(event["object"], V1Job):
+                    if not event["object"].metadata.name.startswith("cds-"):
+                        logger.info("Job {0} is not a cds job, ignoring".format(event["object"].metadata.name))
+                        continue
                     if event["type"]=="DELETED":
                         # we are not interested in the job object being deleted,
                         # it will have already been registered as succeeded/failed at this point.
