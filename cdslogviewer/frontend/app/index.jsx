@@ -82,7 +82,15 @@ class App extends React.Component {
         <Header />
         <AppSwitcher />
         <div className="app">
-          <div style={{ float: "right", height: 0, marginRight: "1em", marginTop: "1em", marginBottom: "-1em" }}>
+          <div
+            style={{
+              float: "right",
+              height: 0,
+              marginRight: "1em",
+              marginTop: "1em",
+              marginBottom: "-1em",
+            }}
+          >
             <IconButton
               onClick={() =>
                 this.setState((prev) => ({ isDark: !prev.isDark }))
