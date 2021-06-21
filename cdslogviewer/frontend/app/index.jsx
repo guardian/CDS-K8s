@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import {
   ThemeProvider,
   createMuiTheme,
@@ -82,7 +82,15 @@ class App extends React.Component {
         <Header />
         <AppSwitcher />
         <div className="app">
-          <div style={{ float: "right", height: 0 }}>
+          <div
+            style={{
+              float: "right",
+              height: 0,
+              marginRight: "1em",
+              marginTop: "1em",
+              marginBottom: "-1em",
+            }}
+          >
             <IconButton
               onClick={() =>
                 this.setState((prev) => ({ isDark: !prev.isDark }))
@@ -92,7 +100,10 @@ class App extends React.Component {
             </IconButton>
           </div>
           <Switch>
-            <Route path="/" component={MainWindow} />
+            <Route path="/log/:routename/:podname" component={MainWindow} />
+            <Route path="/log/:routename" component={MainWindow} />
+            <Route path="/log" component={MainWindow} />
+            <Route path="/" exact render={() => <Redirect to="/log" />} />
           </Switch>
         </div>
       </ThemeProvider>

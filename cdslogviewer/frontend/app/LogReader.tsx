@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Paper, Typography } from "@material-ui/core";
 import clsx from "clsx";
 import LogContent from "./logreader/LogContent";
+import { useParams } from "react-router";
 
 interface LogReaderProps {
   className?: string;
-  selectedLog?: SelectedLog;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -19,22 +19,24 @@ const useStyles = makeStyles((theme) => ({
 const LogReader: React.FC<LogReaderProps> = (props) => {
   const classes = useStyles();
 
+  const { routename, podname } = useParams<{
+    routename: string | undefined;
+    podname: string | undefined;
+  }>();
+
   return (
     <Paper elevation={3} className={clsx(props.className, classes.root)}>
-      {props.selectedLog ? (
+      {routename && podname ? (
         <Typography variant="h4">
-          {props.selectedLog.logName} from {props.selectedLog.route}
+          {podname} from {routename}
         </Typography>
       ) : (
         <Typography variant="h6">
           &lt;---- Please select a logfile in the list to the left
         </Typography>
       )}
-      {props.selectedLog ? (
-        <LogContent
-          routeName={props.selectedLog.route}
-          logName={props.selectedLog.logName}
-        />
+      {routename && podname ? (
+        <LogContent routeName={routename} logName={podname} />
       ) : null}
     </Paper>
   );

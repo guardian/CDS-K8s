@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.8-alpine3.12
 
 COPY requirements.txt /opt/cdsresponder/requirements.txt
 RUN apk add --no-cache alpine-sdk libxml2 libxml2-dev libxslt libxslt-dev && pip install -r /opt/cdsresponder/requirements.txt && apk del alpine-sdk libxml2-dev libxslt-dev && rm -rf /root/.cache
