@@ -63,7 +63,12 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
       loadLogsForRoute(props.routeName, (newData) =>
         setChildLogs((prevState) => prevState.concat(newData))
       ).catch((err) => {
-        console.log("Could not load in logs for ", props.routeName, ": ", err);
+        console.error(
+          "Could not load in logs for ",
+          props.routeName,
+          ": ",
+          err
+        );
       });
     }
   }, [props.refreshGeneration]);
@@ -73,7 +78,6 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
       props.loadingStatusChanged(true);
       setIsLoaded(true);
       if (evt) evt.persist();
-      console.log("loading new data");
 
       loadLogsForRoute(props.routeName, (newData) =>
         setChildLogs((prevState) => prevState.concat(newData))
@@ -161,19 +165,12 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
 
   useEffect(() => {
     if (knownRoutes.length > 0) {
-      console.log(
-        "logSelector: updated routename is ",
-        routename,
-        " routes are ",
-        knownRoutes
-      );
       if (routename) setExpanded([routename]);
     }
   }, [routename, knownRoutes]);
 
   useEffect(() => {
     if (knownRoutes.length > 0) {
-      console.log("logSelector: updated podname is ", podname);
       if (podname) setSelected(podname);
     }
   }, [podname, knownRoutes]);
@@ -197,7 +194,6 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   };
 
   const logSelectionDidChange = (routeName: string, logName: string) => {
-    console.log("Selected ", logName, " from ", routeName);
     history.push(`/log/${routeName}/${logName}`);
   };
 
@@ -208,13 +204,6 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   const handleSelect = (event: React.ChangeEvent<{}>, nodeIds: string) => {
     setSelected(nodeIds);
   };
-
-  console.log(
-    "render: expanded is ",
-    expanded,
-    " known routes are ",
-    knownRoutes
-  );
 
   const refreshLogSelector = async () => {
     setIsLoading(true);
