@@ -21,6 +21,7 @@ import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
 import clsx from "clsx";
 import { useHistory, useParams } from "react-router";
+import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
 
 interface LogLabelProps {
   label: string;
@@ -47,7 +48,6 @@ interface RouteEntryProps {
   routeName: string;
   childKey: any;
   refreshGeneration: number;
-  onError?: (errDesc: string) => void;
   logWasSelected: (routeName: string, logName: string) => void;
   loadingStatusChanged: (loadingStatus: boolean) => void;
 }
@@ -63,6 +63,10 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
       loadLogsForRoute(props.routeName, (newData) =>
         setChildLogs((prevState) => prevState.concat(newData))
       ).catch((err) => {
+        SystemNotification.open(
+          SystemNotifcationKind.Error,
+          `Could not load logs - ${formatError(err, false)}`
+        );
         console.error(
           "Could not load in logs for ",
           props.routeName,
@@ -92,7 +96,10 @@ const RouteEntry: React.FC<RouteEntryProps> = (props) => {
             err
           );
           setIsLoaded(false);
-          if (props.onError) props.onError(formatError(err, false));
+          SystemNotification.open(
+            SystemNotifcationKind.Error,
+            `Could not load logs - ${formatError(err, false)}`
+          );
         });
     }
   };

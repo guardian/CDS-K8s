@@ -44,8 +44,6 @@ const useStyles = makeStyles((theme) => ({
 
 const MainWindow: React.FC<RouteComponentProps> = (props) => {
   const classes = useStyles();
-  const [loading, setLoading] = useState(true);
-  const [lastError, setLastError] = useState<string | undefined>(undefined);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(
