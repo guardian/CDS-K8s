@@ -8,7 +8,7 @@ import {
 import { loadMoreLogLines } from "../data-loading";
 import { parseISO, formatDistanceToNow, isFuture } from "date-fns";
 import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
-import {formatError} from "../common/format_error";
+import { formatError } from "../common/format_error";
 
 interface LogContentProps {
   routeName: string;
@@ -88,7 +88,10 @@ const LogContent: React.FC<LogContentProps> = (props) => {
       })
       .catch((err) => {
         console.error("Could not load in more log lines: ", err);
-        SystemNotification.open(SystemNotifcationKind.Error, `Could not load in more log lines: ${formatError(err, false)}`);
+        SystemNotification.open(
+          SystemNotifcationKind.Error,
+          `Could not load in more log lines: ${formatError(err, false)}`
+        );
       });
   };
 
