@@ -61,7 +61,6 @@ class K8MessageProcessor(MessageProcessor):
     schema = K8Message.schema
     routing_key = "cds.job.*"
     pod_log_basepath = os.getenv("POD_LOGS_BASEPATH")   #if this is not set then no pod logs will be written
-    pod_names_basepath = os.getenv("POD_NAMES_BASEPATH")
 
     @staticmethod
     def get_should_keep_jobs():
@@ -107,7 +106,7 @@ class K8MessageProcessor(MessageProcessor):
         for pod in pod_list.items:
             filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name + ".log")
             k8s.k8utils.dump_pod_logs(pod.metadata.name, pod.metadata.namespace, filename)
-            name_filename = os.path.join(self.pod_names_basepath, job_id + ".txt")
+            name_filename = os.path.join(self.pod_log_basepath, "podnames/" + job_id + ".txt")
             k8s.k8utils.write_pod_name(pod.metadata.name, name_filename)
 
         return len(pod_list.items)

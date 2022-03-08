@@ -128,7 +128,6 @@ class TestK8MessageProcessor(TestCase):
         """
         processor = self.ToTestNoK8mocks("test-namespace", False)
         processor.pod_log_basepath = "/tmp"
-        processor.pod_names_basepath = "/tmp"
         mock_pod_one = MagicMock(target=V1Pod)
         mock_pod_one.metadata = MagicMock(target=V1ObjectMeta)
         mock_pod_one.metadata.uid="pod-id-1"
@@ -147,14 +146,15 @@ class TestK8MessageProcessor(TestCase):
         processor.k8core.list_namespaced_pod = MagicMock(return_value=pods_list)
 
         with patch("k8s.k8utils.dump_pod_logs") as mock_dump_pod_logs:
-            log_count = processor.read_logs("some-job", "some-namespace", "some-id")
-            processor.k8core.list_namespaced_pod.assert_called_once_with("some-namespace", label_selector="job-name=some-job")
-            mock_dump_pod_logs.assert_has_calls([
-                call("pod-name-1","some-namespace", "/tmp/some-job/pod-name-1.log"),
-                call("pod-name-2","some-namespace", "/tmp/some-job/pod-name-2.log")
-            ])
-            self.assertEqual(mock_dump_pod_logs.call_count, 2)
-            self.assertEqual(log_count, 2)
+            with patch("k8s.k8utils.write_pod_name") as mock_write_pod_name:
+                log_count = processor.read_logs("some-job", "some-namespace", "some-id")
+                processor.k8core.list_namespaced_pod.assert_called_once_with("some-namespace", label_selector="job-name=some-job")
+                mock_dump_pod_logs.assert_has_calls([
+                    call("pod-name-1","some-namespace", "/tmp/some-job/pod-name-1.log"),
+                    call("pod-name-2","some-namespace", "/tmp/some-job/pod-name-2.log")
+                ])
+                self.assertEqual(mock_dump_pod_logs.call_count, 2)
+                self.assertEqual(log_count, 2)
 
     def test_read_logs_notrequired(self):
         """
