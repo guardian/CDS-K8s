@@ -106,7 +106,7 @@ class K8MessageProcessor(MessageProcessor):
         for pod in pod_list.items:
             filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name + ".log")
             k8s.k8utils.dump_pod_logs(pod.metadata.name, pod.metadata.namespace, filename)
-            name_filename = os.path.join(self.pod_log_basepath, "podnames/" + job_id + ".txt")
+            name_filename = os.path.join(self.pod_log_basepath, "podnames", job_id + ".txt")
             k8s.k8utils.write_pod_name(pod.metadata.name, name_filename)
 
         return len(pod_list.items)

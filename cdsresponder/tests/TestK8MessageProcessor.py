@@ -153,6 +153,10 @@ class TestK8MessageProcessor(TestCase):
                     call("pod-name-1","some-namespace", "/tmp/some-job/pod-name-1.log"),
                     call("pod-name-2","some-namespace", "/tmp/some-job/pod-name-2.log")
                 ])
+                mock_write_pod_name.assert_has_calls([
+                    call("pod-name-1", "/tmp/podnames/some-id.txt"),
+                    call("pod-name-2", "/tmp/podnames/some-id.txt")
+                ])
                 self.assertEqual(mock_dump_pod_logs.call_count, 2)
                 self.assertEqual(log_count, 2)
 
