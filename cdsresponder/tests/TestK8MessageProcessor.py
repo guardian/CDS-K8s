@@ -49,7 +49,7 @@ class TestK8MessageProcessor(TestCase):
         processor = self.ToTest("test-namespace", False)
         processor.valid_message_receive(MagicMock(pika.channel.Channel), "some-exchange","cds.job.success",1,test_msg)
 
-        processor.read_logs.assert_called_once_with("some-job","job-namespace")
+        processor.read_logs.assert_called_once_with("some-job","job-namespace", "some-id")
         processor.safe_delete_job.assert_called_once_with("some-job","job-namespace")
 
     def test_valid_message_receive_failure(self):
@@ -66,7 +66,7 @@ class TestK8MessageProcessor(TestCase):
         processor = self.ToTest("test-namespace", False)
         processor.valid_message_receive(MagicMock(pika.channel.Channel), "some-exchange", "cds.job.failed", 1, test_msg)
 
-        processor.read_logs.assert_called_once_with("some-job","job-namespace")
+        processor.read_logs.assert_called_once_with("some-job","job-namespace", "some-id")
         processor.safe_delete_job.assert_called_once_with("some-job","job-namespace")
 
     def test_valid_message_receive_success_nodel(self):
@@ -83,7 +83,7 @@ class TestK8MessageProcessor(TestCase):
         processor = self.ToTest("test-namespace", True)
         processor.valid_message_receive(MagicMock(pika.channel.Channel), "some-exchange","cds.job.success",1,test_msg)
 
-        processor.read_logs.assert_called_once_with("some-job","job-namespace")
+        processor.read_logs.assert_called_once_with("some-job","job-namespace", "some-id")
         processor.safe_delete_job.assert_not_called()
 
     def test_valid_message_receive_running(self):
@@ -128,6 +128,7 @@ class TestK8MessageProcessor(TestCase):
         """
         processor = self.ToTestNoK8mocks("test-namespace", False)
         processor.pod_log_basepath = "/tmp"
+        processor.pod_names_basepath = "/tmp"
         mock_pod_one = MagicMock(target=V1Pod)
         mock_pod_one.metadata = MagicMock(target=V1ObjectMeta)
         mock_pod_one.metadata.uid="pod-id-1"
@@ -146,11 +147,11 @@ class TestK8MessageProcessor(TestCase):
         processor.k8core.list_namespaced_pod = MagicMock(return_value=pods_list)
 
         with patch("k8s.k8utils.dump_pod_logs") as mock_dump_pod_logs:
-            log_count = processor.read_logs("some-job", "some-namespace")
+            log_count = processor.read_logs("some-job", "some-namespace", "some-id")
             processor.k8core.list_namespaced_pod.assert_called_once_with("some-namespace", label_selector="job-name=some-job")
             mock_dump_pod_logs.assert_has_calls([
-                call("pod-name-1","some-namespace","/tmp/some-job/pod-name-1.log"),
-                call("pod-name-2","some-namespace","/tmp/some-job/pod-name-2.log")
+                call("pod-name-1","some-namespace", "/tmp/some-job/pod-name-1.log"),
+                call("pod-name-2","some-namespace", "/tmp/some-job/pod-name-2.log")
             ])
             self.assertEqual(mock_dump_pod_logs.call_count, 2)
             self.assertEqual(log_count, 2)
@@ -166,7 +167,7 @@ class TestK8MessageProcessor(TestCase):
         processor.k8core.list_namespaced_pod = MagicMock()
 
         with patch("k8s.k8utils.dump_pod_logs") as mock_dump_pod_logs:
-            log_count = processor.read_logs("some-job", "some-namespace")
+            log_count = processor.read_logs("some-job", "some-namespace", "some-id")
             processor.k8core.list_namespaced_pod.assert_not_called()
 
             mock_dump_pod_logs.assert_not_called()
