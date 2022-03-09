@@ -110,11 +110,12 @@ class LogsController @Inject() (cc:ControllerComponents,
     if(!path.toFile.exists()) {
       NotFound(GenericErrorResponse("not_found","The given file does not exist").asJson)
     } else {
-      val fileSource = scala.io.Source.fromFile(path)
+      val fileSource = scala.io.Source.fromFile(base + "/podnames/" + name + ".txt")
       val fileData = try fileSource.mkString finally fileSource.close()
       val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/")
       Result(
-        header = ResponseHeader(308, Map("Location"->uRLToUse))
+        header = ResponseHeader(308, Map("Location"->uRLToUse)),
+        body = null
       )
     }
   }
