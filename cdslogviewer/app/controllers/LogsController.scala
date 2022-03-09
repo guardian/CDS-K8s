@@ -103,4 +103,19 @@ class LogsController @Inject() (cc:ControllerComponents,
       }
     }
   }
+
+  def logByJobName(name:String) = IsAdmin { uid=> request=>
+    val base = config.get[String]("cds.logbase")
+    val path = Paths.get(base, "podnames", name+".txt")
+    if(!path.toFile.exists()) {
+      NotFound(GenericErrorResponse("not_found","The given file does not exist").asJson)
+    } else {
+      val fileSource = scala.io.Source.fromFile(path)
+      val fileData = try fileSource.mkString finally fileSource.close()
+      val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/")
+      Result(
+        header = ResponseHeader(308, Map("Location"->uRLToUse))
+      )
+    }
+  }
 }

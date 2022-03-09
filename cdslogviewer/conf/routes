@@ -2,6 +2,7 @@ GET     /                           @controllers.IndexController.root
 GET     /api/routes                 @controllers.LogsController.listRoutes
 GET     /api/:route                 @controllers.LogsController.listLogs(route:String)
 GET     /api/:route/:logname        @controllers.LogsController.streamLog(route:String, logname:String, fromLine:Long?=0)
+GET     /api/logByJobName/:name     @controllers.LogsController.logByJobName(name:String)
 
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
