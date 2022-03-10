@@ -4,7 +4,7 @@ import { loadLogForJobNameURL } from "./data-loading";
 
 const LogByJobName: React.FC<RouteComponentProps> = (props) => {
   const { jobname } = useParams<{
-    jobname: string | undefined;
+    jobname: string;
   }>();
 
   const logURL = loadLogForJobNameURL(jobname);
