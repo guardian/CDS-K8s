@@ -116,7 +116,7 @@ class LogsController @Inject() (cc:ControllerComponents,
       val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/").filterNot(_.isWhitespace)
       Result(
         header = ResponseHeader(308, Map("Location"->uRLToUse)),
-        body = null
+        body = HttpEntity.Strict(ByteString(""), Some("text/plain"))
       )
     }
   }
