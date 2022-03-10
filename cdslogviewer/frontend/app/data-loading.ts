@@ -77,7 +77,7 @@ async function loadMoreLogLines(
 async function loadLogForJobNameURL(
     jobName: string
 ) {
-  const response = await authenticatedFetch(`/api/logByJobName${jobName}`, {});
+  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {});
 
   if (response.status != 308) {
     console.error(
