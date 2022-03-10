@@ -1,5 +1,5 @@
-import React, { useHistory } from "react";
-import { RouteComponentProps, useParams } from "react-router";
+import React from "react";
+import { RouteComponentProps, useParams, useHistory } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
 
 const LogByJobName: React.FC<RouteComponentProps> = (props) => {
