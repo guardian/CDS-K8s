@@ -1,17 +1,37 @@
-import React from "react";
-import { RouteComponentProps, useParams, useHistory } from "react-router";
+import React, { useState } from "react";
+import { useParams, useHistory } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
+import { SystemNotifcationKind, SystemNotification } from "pluto-headers";
+import { formatError } from "./common/format_error";
 
-const LogByJobName: React.FC<RouteComponentProps> = (props) => {
+interface LogByJobNameProps {
+  className?: string;
+}
+
+const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
   const { jobname } = useParams<{
     jobname: string;
   }>();
 
-  const logURL = loadLogForJobNameURL(jobname);
+  const [logURL, setLogURL] = useState("");
 
-  const history = useHistory();
+  loadLogForJobNameURL(jobname)
+    .then((results) => {
+      if (results != null) {
+        setLogURL(results);
+      }
+      let history = useHistory();
+      history.push(logURL);
+    })
+    .catch((err) => {
+      console.error("Could not load log URL: ", err);
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        `Could not load log URL: ${formatError(err, false)}`
+      );
+    });
 
-  history.push(logURL);
+  return <></>;
 };
 
 export default LogByJobName;
