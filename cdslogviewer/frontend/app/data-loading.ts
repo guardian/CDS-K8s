@@ -75,7 +75,9 @@ async function loadMoreLogLines(
 }
 
 async function loadLogForJobNameURL(jobName: string) {
-  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {});
+  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {
+    redirect: "manual",
+  });
 
   if (response.status != 308) {
     console.error("Could not load log URL: server returned ", response.status);
