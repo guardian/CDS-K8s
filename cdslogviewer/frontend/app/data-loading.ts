@@ -86,7 +86,7 @@ async function loadLogForJobNameURL(jobName: string) {
     throw `Server error ${response.status}`;
   }
 
-  console.log(response.headers);
+  console.log(response);
   return response.headers.get("Location");
 }
 
