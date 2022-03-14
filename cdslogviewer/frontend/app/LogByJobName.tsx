@@ -13,17 +13,11 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
     jobname: string;
   }>();
 
-  const [logURL, setLogURL] = useState("");
-
   const forwardToURL = () => {
     loadLogForJobNameURL(jobname)
-      .then((results) => {
-        console.log(results);
-        if (results != null) {
-          setLogURL(results);
-        }
-        console.log(logURL);
-        window.location.href = logURL;
+      .then((result) => {
+        console.log(result);
+        window.location.href = result;
       })
       .catch((err) => {
         console.error("Could not load log URL: ", err);
