@@ -104,6 +104,8 @@ class LogsController @Inject() (cc:ControllerComponents,
     }
   }
 
+  case class uRLClass(log_url:String)
+
   def logByJobName(name:String) = IsAdmin { uid=> request=>
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, "podnames", name+".txt")
@@ -114,10 +116,7 @@ class LogsController @Inject() (cc:ControllerComponents,
       val fileSource = scala.io.Source.fromFile(base + "/podnames/" + name + ".txt")
       val fileData = try fileSource.mkString finally fileSource.close()
       val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/").filterNot(_.isWhitespace)
-      Result(
-        header = ResponseHeader(200, Map.empty),
-        body = HttpEntity.Strict(ByteString("{"log_url":"${uRLToUse}"}"), Some("application/json"))
-      )
+      Ok(uRLClass(uRLToUse).asJson)
     }
   }
 }
