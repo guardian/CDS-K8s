@@ -75,8 +75,7 @@ async function loadMoreLogLines(
 }
 
 async function loadLogForJobNameURL(jobName: string) {
-  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {}
-  );
+  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {});
 
   if (response.status != 200) {
     console.error("Could not load log URL: server returned ", response.status);
@@ -86,13 +85,13 @@ async function loadLogForJobNameURL(jobName: string) {
   }
   console.log(response);
 
-  let body = await response.json()
+  let body = await response.json();
 
-  console.log(body)
+  console.log(body);
 
-  let obj = JSON.parse(body)
+  let obj = JSON.parse(body);
 
-  console.log(obj)
+  console.log(obj);
 
   return obj.log_url;
 }
