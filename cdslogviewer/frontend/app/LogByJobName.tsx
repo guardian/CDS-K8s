@@ -21,8 +21,7 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
         if (results != null) {
           setLogURL(results);
         }
-        let history = useHistory();
-        history.push(logURL);
+        window.location.href = logURL;
       })
       .catch((err) => {
         console.error("Could not load log URL: ", err);
