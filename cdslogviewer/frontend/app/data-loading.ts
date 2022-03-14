@@ -89,11 +89,7 @@ async function loadLogForJobNameURL(jobName: string) {
 
   console.log(body);
 
-  let obj = JSON.parse(body);
-
-  console.log(obj);
-
-  return obj.log_url;
+  return body.log_url;
 }
 
 export { loadLogsForRoute, loadMoreLogLines, loadLogForJobNameURL };
