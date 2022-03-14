@@ -9,29 +9,31 @@ interface LogByJobNameProps {
 }
 
 const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
-  const { jobname } = useParams<{
-    jobname: string;
-  }>();
+    const {jobname} = useParams<{
+        jobname: string;
+    }>();
 
-  const [logURL, setLogURL] = useState("");
+    const [logURL, setLogURL] = useState("");
 
-  loadLogForJobNameURL(jobname)
-    .then((results) => {
-      if (results != null) {
-        setLogURL(results);
-      }
-      let history = useHistory();
-      history.push(logURL);
-    })
-    .catch((err) => {
-      console.error("Could not load log URL: ", err);
-      SystemNotification.open(
-        SystemNotifcationKind.Error,
-        `Could not load log URL: ${formatError(err, false)}`
-      );
-    });
+    const forwardToURL = () => {
+        loadLogForJobNameURL(jobname)
+            .then((results) => {
+                if (results != null) {
+                    setLogURL(results);
+                }
+                let history = useHistory();
+                history.push(logURL);
+            })
+            .catch((err) => {
+                console.error("Could not load log URL: ", err);
+                SystemNotification.open(
+                    SystemNotifcationKind.Error,
+                    `Could not load log URL: ${formatError(err, false)}`
+                );
+            });
+    };
 
-  return <></>;
+  return <>{forwardToURL()}</>;
 };
 
 export default LogByJobName;
