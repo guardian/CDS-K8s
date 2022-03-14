@@ -18,9 +18,11 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
   const forwardToURL = () => {
     loadLogForJobNameURL(jobname)
       .then((results) => {
+        console.log(results);
         if (results != null) {
           setLogURL(results);
         }
+        console.log(logURL);
         window.location.href = logURL;
       })
       .catch((err) => {
