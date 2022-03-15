@@ -149,8 +149,8 @@ class TestK8MessageProcessor(TestCase):
             log_count = processor.read_logs("some-job", "some-namespace")
             processor.k8core.list_namespaced_pod.assert_called_once_with("some-namespace", label_selector="job-name=some-job")
             mock_dump_pod_logs.assert_has_calls([
-                call("pod-name-1","some-namespace", "/tmp/some-job/pod-name-1.log"),
-                call("pod-name-2","some-namespace", "/tmp/some-job/pod-name-2.log")
+                call("pod-name-1","some-namespace","/tmp/some-job/pod-name-1.log"),
+                call("pod-name-2","some-namespace","/tmp/some-job/pod-name-2.log")
             ])
             self.assertEqual(mock_dump_pod_logs.call_count, 2)
             self.assertEqual(log_count, 2)
