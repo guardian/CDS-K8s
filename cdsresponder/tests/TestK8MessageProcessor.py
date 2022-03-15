@@ -66,7 +66,7 @@ class TestK8MessageProcessor(TestCase):
         processor = self.ToTest("test-namespace", False)
         processor.valid_message_receive(MagicMock(pika.channel.Channel), "some-exchange", "cds.job.failed", 1, test_msg)
 
-        processor.read_logs.assert_called_once_with("some-job","job-namespace", "some-id")
+        processor.read_logs.assert_called_once_with("some-job","job-namespace")
         processor.safe_delete_job.assert_called_once_with("some-job","job-namespace")
 
     def test_valid_message_receive_success_nodel(self):
