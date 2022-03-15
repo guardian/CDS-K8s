@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, useHistory } from "react-router";
+import React from "react";
+import { useParams } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
 import { SystemNotifcationKind, SystemNotification } from "pluto-headers";
 import { formatError } from "./common/format_error";
@@ -16,7 +16,6 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
   const forwardToURL = () => {
     loadLogForJobNameURL(jobname)
       .then((result) => {
-        console.log(result);
         window.location.href = result;
       })
       .catch((err) => {
