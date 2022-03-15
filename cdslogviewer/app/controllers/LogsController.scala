@@ -109,7 +109,6 @@ class LogsController @Inject() (cc:ControllerComponents,
   def logByJobName(name:String) = IsAdmin { uid=> request=>
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, "podnames", name+".txt")
-    logger.debug(s"Path used: ${path.toString}")
     if(!path.toFile.exists()) {
       NotFound(GenericErrorResponse("not_found","The given file does not exist").asJson)
     } else {

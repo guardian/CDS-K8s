@@ -92,7 +92,7 @@ class K8MessageProcessor(MessageProcessor):
             raise ValueError("No namespace configured")
         logger.info("Startup - we are in namespace {0}".format(self.namespace))
 
-    def read_logs(self, job_name:str, job_namespace:str, job_id:str)->int:
+    def read_logs(self, job_name:str, job_namespace:str)->int:
         if self.pod_log_basepath is None:
             logger.warning("If you want pod logs to be saved, then you must set POD_LOGS_BASEPATH to a valid writable filepath")
             return 0
@@ -106,9 +106,6 @@ class K8MessageProcessor(MessageProcessor):
         for pod in pod_list.items:
             filename = os.path.join(self.pod_log_basepath, job_name, pod.metadata.name + ".log")
             k8s.k8utils.dump_pod_logs(pod.metadata.name, pod.metadata.namespace, filename)
-            name_filename = os.path.join(self.pod_log_basepath, "podnames", job_id + ".txt")
-            logger.info("Attempting to write: {0}".format(name_filename))
-            k8s.k8utils.write_pod_name(pod.metadata.name, name_filename)
 
         return len(pod_list.items)
 
@@ -125,7 +122,7 @@ class K8MessageProcessor(MessageProcessor):
 
             if routing_key == "cds.job.failed" or routing_key == "cds.job.success":
                 try:
-                    saved_logs = self.read_logs(msg.job_name, msg.job_namespace, msg.job_id)
+                    saved_logs = self.read_logs(msg.job_name, msg.job_namespace)
                     logger.info("Job {0} terminated, saved {1} pod logs".format(msg.job_name, saved_logs))
                 except Exception as e:
                     logger.error("Could not save job logs for {0}: {1}".format(msg.job_name, str(e)), exc_info=e)

@@ -28,9 +28,3 @@ def dump_pod_logs(pod_name:str, pod_namespace:str, filename:str)->int:
         log_content = corev1.read_namespaced_pod_log(pod_name, pod_namespace)
         logger.debug("Downloaded {0} bytes of log data from {1} in {2}".format(len(log_content), pod_name, pod_namespace))
         return f.write(log_content)
-
-
-def write_pod_name(pod_name:str, filename:str)->int:
-    with open(filename, "w") as f:
-        return f.write(pod_name)
-
