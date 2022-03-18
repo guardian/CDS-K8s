@@ -115,7 +115,7 @@ class LogsController @Inject() (cc:ControllerComponents,
     } else {
       val fileSource = scala.io.Source.fromFile(base + "/podnames/" + name + ".txt")
       val fileData = try fileSource.mkString finally fileSource.close()
-      val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/").filterNot(_.isWhitespace)
+      val uRLToUse = fileData.replace("/var/log/cds_backend/", "/log/").filterNot(_.isWhitespace)
       Ok(URLLink(uRLToUse).asJson)
     }
   }
