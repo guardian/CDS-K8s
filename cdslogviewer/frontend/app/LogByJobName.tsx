@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router";
+import { useParams, useHistory } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
 import { SystemNotifcationKind, SystemNotification } from "pluto-headers";
 import { formatError } from "./common/format_error";
@@ -13,10 +13,12 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
     jobname: string;
   }>();
 
+  const history = useHistory();
+
   const forwardToURL = () => {
     loadLogForJobNameURL(jobname)
       .then((result) => {
-        window.location.href = result;
+        history.push(result);
       })
       .catch((err) => {
         console.error("Could not load log URL: ", err);

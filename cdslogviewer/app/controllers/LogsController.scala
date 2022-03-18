@@ -104,18 +104,19 @@ class LogsController @Inject() (cc:ControllerComponents,
     }
   }
 
-  case class uRLClass(log_url:String)
+  case class URLLink(log_url:String)
 
   def logByJobName(name:String) = IsAdmin { uid=> request=>
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, "podnames", name+".txt")
     if(!path.toFile.exists()) {
-      NotFound(GenericErrorResponse("not_found","The given file does not exist").asJson)
+      logger.error(s"Pod name file not found at path: ${path.toString()}")
+      NotFound(GenericErrorResponse("not_found","Job name not found").asJson)
     } else {
       val fileSource = scala.io.Source.fromFile(base + "/podnames/" + name + ".txt")
       val fileData = try fileSource.mkString finally fileSource.close()
       val uRLToUse = fileData.replace("/var/log/cds_backend/", "/cds/log/").filterNot(_.isWhitespace)
-      Ok(uRLClass(uRLToUse).asJson)
+      Ok(URLLink(uRLToUse).asJson)
     }
   }
 }

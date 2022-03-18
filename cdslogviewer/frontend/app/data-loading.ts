@@ -82,7 +82,7 @@ async function loadLogForJobNameURL(jobName: string) {
     console.error("Server said ", errorText);
     throw `Server error ${response.status}`;
   }
-  let body = await response.json();
+  const body = await response.json();
   return body.log_url;
 }
 
