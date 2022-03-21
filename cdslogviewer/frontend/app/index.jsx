@@ -12,6 +12,8 @@ import MainWindow from "./MainWindow";
 import { Header, AppSwitcher } from "pluto-headers";
 import { Brightness4, Brightness7 } from "@material-ui/icons";
 import createCustomisedTheme from "./theming";
+import LogByJobName from "./LogByJobName";
+import { SystemNotification } from "pluto-headers";
 
 const darkTheme = createCustomisedTheme({
   typography: {
@@ -102,9 +104,11 @@ class App extends React.Component {
           <Switch>
             <Route path="/log/:routename/:podname" component={MainWindow} />
             <Route path="/log/:routename" component={MainWindow} />
+            <Route path="/logByJobName/:jobname" component={LogByJobName} />
             <Route path="/log" component={MainWindow} />
             <Route path="/" exact render={() => <Redirect to="/log" />} />
           </Switch>
+          <SystemNotification />
         </div>
       </ThemeProvider>
     );

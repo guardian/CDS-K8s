@@ -73,4 +73,17 @@ async function loadMoreLogLines(
     throw "Server did not return any content";
   }
 }
-export { loadLogsForRoute, loadMoreLogLines };
+
+async function loadLogForJobNameURL(jobName: string) {
+  const response = await authenticatedFetch(`/api/logByJobName/${jobName}`, {});
+  if (response.status != 200) {
+    console.error("Could not load log URL: server returned ", response.status);
+    const errorText = await response.text();
+    console.error("Server said ", errorText);
+    throw `Server error ${response.status}`;
+  }
+  const body = await response.json();
+  return body.log_url;
+}
+
+export { loadLogsForRoute, loadMoreLogLines, loadLogForJobNameURL };
