@@ -195,22 +195,22 @@ jobs:
         name: Prepare test outputs location
 
       - run: "echo -e \"\n//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}\" >> .npmrc"
-        working-directory: frontend
+        working-directory: cdslogviewer/frontend
 
       - run: yarn install --frozen-lockfile
-        working-directory: frontend
+        working-directory: cdslogviewer/frontend
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - run: yarn lint
-        working-directory: frontend
+        working-directory: cdslogviewer/frontend
       - run: yarn test
         env:
           JEST_JUNIT_OUTPUT_DIR: ../junit-tests
           JEST_JUNIT_TITLE: Frontend tests
-        working-directory: frontend
+        working-directory: cdslogviewer/frontend
       - run: yarn build
-        working-directory: frontend
+        working-directory: cdslogviewer/frontend
 
       - name: Build and test everything
         env:
