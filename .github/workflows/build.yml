@@ -222,7 +222,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
-          files: junit-tests/*.xml
+          files: cdslogviewer/junit-tests/*.xml
 
       - name: Tag docker image cdslogviewer
         run:  docker tag guardianmultimedia/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }}
