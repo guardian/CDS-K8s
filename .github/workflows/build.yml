@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  cdsresponder:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -77,3 +77,73 @@ jobs:
         with:
           name: cdsresponder-build-info
           path: cdsresponder/build-info.yaml
+  cdsreaper:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cdsreaper
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt awscli
+
+      - run: nosetests --with-coverage --verbose --cover-package=. --with-xunit --xunit-file=/tmp/nosetests.xml
+        env:
+          COVERAGE_FILE: /tmp/coverage.db
+
+      - name: Make GITHUB_RUN_NUMBER env var available outside of shells
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        shell: bash
+        run: |
+          echo GITHUB_RUN_NUMBER=$(( GITHUB_RUN_NUMBER + 165 ))>> $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GHA-build
+
+      - name: ECR Login
+        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - run: docker build . -t "guardianmultimedia/cdsreaper:${{ env.GITHUB_RUN_NUMBER }}"
+
+      - name: Tag Docker image cdsreaper
+        run: docker tag guardianmultimedia/cdsreaper:${{ env.GITHUB_RUN_NUMBER }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/cdsreaper:${{ env.GITHUB_RUN_NUMBER }}
+
+      - name: Push Docker image cdsreaper
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/cdsreaper:${{ env.GITHUB_RUN_NUMBER }}
+
+      - name: Output build-info.yaml
+        uses: fredex42/pluto-build-info@v1.1
+        with:
+          builtimage: AWS_ACCOUNT_ID.dkr.ecr.AWS_REGION.amazonaws.com/cdsreaper:${{ env.GITHUB_RUN_NUMBER }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filename: cdsreaper/build-info.yaml
+
+      - name: Check the output
+        run: cat build-info.yaml
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdsreaper-build-info
+          path: cdsreaper/build-info.yaml
