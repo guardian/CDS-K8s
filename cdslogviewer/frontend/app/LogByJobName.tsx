@@ -1,7 +1,10 @@
 import React from "react";
 import { useParams, useHistory } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
-import { SystemNotifcationKind, SystemNotification } from "@guardian/pluto-headers";
+import {
+  SystemNotifcationKind,
+  SystemNotification,
+} from "@guardian/pluto-headers";
 import { formatError } from "./common/format_error";
 
 interface LogByJobNameProps {

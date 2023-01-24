@@ -9,7 +9,11 @@ import {
 } from "@material-ui/core";
 import axios from "axios";
 import MainWindow from "./MainWindow";
-import { Header, AppSwitcher, SystemNotification } from "@guardian/pluto-headers";
+import {
+  Header,
+  AppSwitcher,
+  SystemNotification,
+} from "@guardian/pluto-headers";
 import { Brightness4, Brightness7 } from "@material-ui/icons";
 import createCustomisedTheme from "./theming";
 import LogByJobName from "./LogByJobName";
