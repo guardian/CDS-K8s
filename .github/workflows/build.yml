@@ -1,4 +1,4 @@
-name: Build and Upload cdsresponder
+name: Build and Upload CDS K8s
 
 on:
   push:
@@ -147,3 +147,101 @@ jobs:
         with:
           name: cdsreaper-build-info
           path: cdsreaper/build-info.yaml
+  cdslogviewer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cdslogviewer
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Setup node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.14.1"
+
+      - name: Make GITHUB_RUN_NUMBER env var available outside of shells
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        shell: bash
+        run: |
+          echo GITHUB_RUN_NUMBER=$(( GITHUB_RUN_NUMBER + 165 ))>> $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GHA-build
+
+      - name: ECR Login
+        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - run: if [ -d "junit-tests" ]; then mkdir junit-tests; fi
+        name: Prepare test outputs location
+
+      - run: "echo -e \"\n//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}\" >> .npmrc"
+        working-directory: frontend
+
+      - run: yarn install --frozen-lockfile
+        working-directory: frontend
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - run: yarn lint
+        working-directory: frontend
+      - run: yarn test
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ../junit-tests
+          JEST_JUNIT_TITLE: Frontend tests
+        working-directory: frontend
+      - run: yarn build
+        working-directory: frontend
+
+      - name: Build and test everything
+        env:
+          JAVA_OPTS: "-Dbuild.number=${{ env.GITHUB_RUN_NUMBER }}"
+          SBT_JUNIT_OUTPUT: ./junit-tests
+        run: sbt -v "test; docker:publishLocal"
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: junit-tests/*.xml
+
+      - name: Tag docker image cdslogviewer
+        run:  docker tag guardianmultimedia/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }}
+
+      - name: Push docker image cdslogviewer
+        run: docker push  ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }}
+
+      - name: Output build-info.yaml
+        uses: fredex42/pluto-build-info@v1.1
+        with:
+          builtimage: AWS_ACCOUNT_ID.dkr.ecr.AWS_REGION.amazonaws.com/cdslogviewer:${{ env.GITHUB_RUN_NUMBER }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filename: cdslogviewer/build-info.yaml
+
+      - name: Check the output
+        run: cat build-info.yaml
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v3
+        with:
+          name: cdslogviewer-build-info
+          path: cdslogviewer/build-info.yaml
