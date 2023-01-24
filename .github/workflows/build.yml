@@ -2,7 +2,7 @@ name: Build and Upload CDS K8s
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
