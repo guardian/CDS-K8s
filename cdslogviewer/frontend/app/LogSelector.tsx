@@ -21,7 +21,7 @@ import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
 import clsx from "clsx";
 import { useHistory, useParams } from "react-router";
-import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
+import { SystemNotification, SystemNotifcationKind } from "@guardian/pluto-headers";
 
 interface LogLabelProps {
   label: string;

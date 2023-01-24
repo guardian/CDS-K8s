@@ -7,7 +7,7 @@ import {
 } from "@material-ui/core";
 import { loadMoreLogLines } from "../data-loading";
 import { parseISO, formatDistanceToNow, isFuture } from "date-fns";
-import { SystemNotification, SystemNotifcationKind } from "pluto-headers";
+import { SystemNotification, SystemNotifcationKind } from "@guardian/pluto-headers";
 import { formatError } from "../common/format_error";
 
 interface LogContentProps {

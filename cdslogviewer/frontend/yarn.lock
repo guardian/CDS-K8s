@@ -312,6 +312,11 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.8.0.tgz#bbbff68978fefdbe68ccb533bc8cbe1d1afb5413"
   integrity sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==
 
+"@guardian/pluto-headers@^v1.6.5":
+  version "1.6.5"
+  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/1.6.5/e0dbfb8728cb43d33eab0a56c757cb3ab919b759#e0dbfb8728cb43d33eab0a56c757cb3ab919b759"
+  integrity sha512-UeBrFKUnH6g1rH5RVFHIwxNB6g8SaEw7F7Sz/7Zs29YnnYT9Ttf8l78pQnLLqQwsjwjFbC+Ywg8WWipdn2Ab8g==
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -4391,10 +4396,6 @@ pkg-dir@^4.2.0:
   integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
   dependencies:
     find-up "^4.0.0"
-
-"pluto-headers@https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.4.0":
-  version "1.4.0"
-  resolved "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#bc83c8f0cfae2f6a39440689f331cb441e61c256"
 
 popper.js@1.16.1-lts:
   version "1.16.1-lts"
