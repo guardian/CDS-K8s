@@ -32,6 +32,7 @@
     ]
   },
   "dependencies": {
+    "@guardian/pluto-headers": "^v1.6.5",
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.58",
@@ -46,7 +47,6 @@
     "css-loader": "^5.2.4",
     "date-fns": "^2.21.3",
     "jsonwebtoken": "^8.5.1",
-    "pluto-headers": "https://gitlab.com/codmill/customer-projects/guardian/pluto-headers.git#v1.5.1",
     "process": "^0.11.10",
     "query-string": "6.13.1",
     "react": "^17.0.2",
