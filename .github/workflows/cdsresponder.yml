@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cdsresponder
     permissions:
       id-token: write
       contents: read
@@ -23,8 +26,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.9"
-
-      - run: cd cdsresponder/
 
       - name: Install dependencies
         run: |
