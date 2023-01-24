@@ -67,12 +67,13 @@ jobs:
         with:
           builtimage: AWS_ACCOUNT_ID.dkr.ecr.AWS_REGION.amazonaws.com/cdsresponder:${{ env.GITHUB_RUN_NUMBER }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          filename: cdsresponder/build-info.yaml
 
       - name: Check the output
-        run: cat build-info.yaml
+        run: cat cdsresponder/build-info.yaml
 
       - name: Upload build info
         uses: actions/upload-artifact@v3
         with:
-          name: build-info
-          path: build-info.yaml
+          name: cdsresponder-build-info
+          path: cdsresponder/build-info.yaml
