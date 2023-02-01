@@ -312,10 +312,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.8.0.tgz#bbbff68978fefdbe68ccb533bc8cbe1d1afb5413"
   integrity sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==
 
-"@guardian/pluto-headers@^v1.6.5":
-  version "1.6.5"
-  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/1.6.5/e0dbfb8728cb43d33eab0a56c757cb3ab919b759#e0dbfb8728cb43d33eab0a56c757cb3ab919b759"
-  integrity sha512-UeBrFKUnH6g1rH5RVFHIwxNB6g8SaEw7F7Sz/7Zs29YnnYT9Ttf8l78pQnLLqQwsjwjFbC+Ywg8WWipdn2Ab8g==
+"@guardian/pluto-headers@v2.0.4":
+  version "2.0.4"
+  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/2.0.4/5b5e2aa2fd7557dddf8e66c226fc1b0299455a64#5b5e2aa2fd7557dddf8e66c226fc1b0299455a64"
+  integrity sha512-9g/g0D+U08CT5sfSeNZDTR2C8xDTHEYzrhqEo+g8DDp67BCuf0Sc1tt2nrR+mJoz0z+jat2xUVIW/QJFniYmwA==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -3487,6 +3487,11 @@ jest@^26.6.3:
     "@jest/core" "^26.6.3"
     import-local "^3.0.2"
     jest-cli "^26.6.3"
+
+jose@^4.9.3:
+  version "4.11.2"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.11.2.tgz#d9699307c02e18ff56825843ba90e2fae9f09e23"
+  integrity sha512-njj0VL2TsIxCtgzhO+9RRobBvws4oYyCM8TpvoUQwl/MbIM3NFJRR9+e6x0sS5xXaP1t6OCBkaBME98OV9zU5A==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

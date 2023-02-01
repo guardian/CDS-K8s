@@ -10,9 +10,13 @@ import {
 import axios from "axios";
 import MainWindow from "./MainWindow";
 import {
-  Header,
   AppSwitcher,
+  Header,
+  OAuthContextProvider,
   SystemNotification,
+  UserContextProvider,
+  verifyExistingLogin,
+  handleUnauthorized,
 } from "@guardian/pluto-headers";
 import { Brightness4, Brightness7 } from "@material-ui/icons";
 import createCustomisedTheme from "./theming";
@@ -77,43 +81,121 @@ class App extends React.Component {
 
     this.state = {
       isDark: true,
+      loading: true,
+      isLoggedIn: false,
+      tokenExpired: false,
+      plutoConfig: {},
+      userProfile: undefined,
     };
+
+    this.handleUnauthorizedFailed = this.handleUnauthorizedFailed.bind(this);
+    this.onLoginValid = this.onLoginValid.bind(this);
+    this.oAuthConfigLoaded = this.oAuthConfigLoaded.bind(this);
+
+    axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        handleUnauthorized(
+          this.state.plutoConfig,
+          error,
+          this.handleUnauthorizedFailed
+        );
+
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  handleUnauthorizedFailed() {
+    this.setState({
+      isLoggedIn: false,
+      tokenExpired: true,
+    });
+  }
+
+  async onLoginValid(valid, loginData) {
+    // Fetch the OAuth config.
+    try {
+      const response = await fetch("/meta/oauth/config.json");
+      if (response.status === 200) {
+        const data = await response.json();
+        this.setState({ plutoConfig: data });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    this.setState(
+      {
+        isLoggedIn: valid,
+      },
+      () => {
+        this.setState({ loading: false });
+      }
+    );
+  }
+
+  haveToken() {
+    return window.localStorage.getItem("pluto:access-token");
+  }
+
+  oAuthConfigLoaded(oAuthConfig) {
+    //If we already have a user token at mount, verify it and update our internal state.
+    //If we do not, ignore for the time being; it will be set dynamically when the login occurs.
+    console.log("Loaded oAuthConfig: ", oAuthConfig);
+    if (this.haveToken()) {
+      verifyExistingLogin(oAuthConfig)
+        .then((profile) => this.setState({ userProfile: profile }))
+        .catch((err) => {
+          console.error("Could not verify existing user profile: ", err);
+        });
+    }
   }
 
   render() {
     return (
-      <ThemeProvider theme={this.state.isDark ? darkTheme : lightTheme}>
-        <CssBaseline />
-        <Header />
-        <AppSwitcher />
-        <div className="app">
-          <div
-            style={{
-              float: "right",
-              height: 0,
-              marginRight: "1em",
-              marginTop: "1em",
-              marginBottom: "-1em",
-            }}
-          >
-            <IconButton
-              onClick={() =>
-                this.setState((prev) => ({ isDark: !prev.isDark }))
-              }
-            >
-              {this.state.isDark ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-          </div>
-          <Switch>
-            <Route path="/log/:routename/:podname" component={MainWindow} />
-            <Route path="/log/:routename" component={MainWindow} />
-            <Route path="/logByJobName/:jobname" component={LogByJobName} />
-            <Route path="/log" component={MainWindow} />
-            <Route path="/" exact render={() => <Redirect to="/log" />} />
-          </Switch>
-          <SystemNotification />
-        </div>
-      </ThemeProvider>
+      <OAuthContextProvider onLoaded={this.oAuthConfigLoaded}>
+        <UserContextProvider
+          value={{
+            profile: this.state.userProfile,
+            updateProfile: (newValue) =>
+              this.setState({ userProfile: newValue }),
+          }}
+        >
+          <ThemeProvider theme={this.state.isDark ? darkTheme : lightTheme}>
+            <CssBaseline />
+            <Header></Header>
+            <AppSwitcher onLoginValid={this.onLoginValid}></AppSwitcher>
+            <div className="app">
+              <div
+                style={{
+                  float: "right",
+                  height: 0,
+                  marginRight: "1em",
+                  marginTop: "1em",
+                  marginBottom: "-1em",
+                }}
+              >
+                <IconButton
+                  onClick={() =>
+                    this.setState((prev) => ({ isDark: !prev.isDark }))
+                  }
+                >
+                  {this.state.isDark ? <Brightness7 /> : <Brightness4 />}
+                </IconButton>
+              </div>
+              <Switch>
+                <Route path="/log/:routename/:podname" component={MainWindow} />
+                <Route path="/log/:routename" component={MainWindow} />
+                <Route path="/logByJobName/:jobname" component={LogByJobName} />
+                <Route path="/log" component={MainWindow} />
+                <Route path="/" exact render={() => <Redirect to="/log" />} />
+              </Switch>
+              <SystemNotification />
+            </div>
+          </ThemeProvider>
+        </UserContextProvider>
+      </OAuthContextProvider>
     );
   }
 }
