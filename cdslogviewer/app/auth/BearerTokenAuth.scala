@@ -117,12 +117,13 @@ class BearerTokenAuth @Inject() (config:Configuration) {
       maybeKeyId match {
         case Some(kid) =>
           logger.info(s"Provided JWT is signed with key ID $kid")
-          // The two lines below are here because the code copied from pluto-versions-manager did not work with Keycloak.
-          // I tested pluto-versions-manager itself with Keycloak and it had the same issue.
-          // The problem with the code appeared to be that the key id. from the certificate was different to that from
-          // the JSON Web Token so the getKeyByKeyId function fails. We may want to fix this in a better way.
           val list = verifiers.getKeys
-          if (list.isEmpty) None else Some(new RSASSAVerifier(list.get(0).toRSAKey))
+          if (list.size > 1) {
+            Option(verifiers.getKeyByKeyId(kid))
+              .map(jwk=>new RSASSAVerifier(jwk.toRSAKey))
+          } else {
+            if (list.isEmpty) None else Some(new RSASSAVerifier(list.get(0).toRSAKey))
+          }
         case None =>
           logger.info(s"Provided JWT has no key ID, using first available cert")
           val list = verifiers.getKeys
