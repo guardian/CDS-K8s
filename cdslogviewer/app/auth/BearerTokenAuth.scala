@@ -2,18 +2,18 @@ package auth
 
 import java.time.Instant
 import java.util.Date
-
 import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.JWK
+import com.nimbusds.jose.jwk.{JWK, JWKSet}
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import javax.inject.{Inject, Singleton}
 import org.slf4j.LoggerFactory
 import play.api.mvc.RequestHeader
 import play.api.Configuration
 import play.api.libs.typedmap.TypedKey
-
+import java.net.URL
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
+
 object BearerTokenAuth {
   final val ClaimsAttributeKey = TypedKey[JWTClaimsSet]("claims")
 }
@@ -46,12 +46,13 @@ class BearerTokenAuth @Inject() (config:Configuration) {
   //see https://stackoverflow.com/questions/475074/regex-to-parse-or-validate-base64-data
   //it is not the best option but is the simplest that will work here
   private val authXtractor = "^Bearer\\s+([a-zA-Z0-9+/._-]*={0,3})$".r
-  private val maybeVerifier = loadInKey() match {
+
+  private val maybeVerifiers = loadInKey() match {
     case Failure(err)=>
       if(!sys.env.contains("CI")) logger.warn(s"No token validation cert in config so bearer token auth will not work. Error was ${err.getMessage}")
       None
     case Success(jwk)=>
-      Some(new RSASSAVerifier(jwk.toRSAKey))
+      Some(jwk)
   }
 
   /**
@@ -78,19 +79,57 @@ class BearerTokenAuth @Inject() (config:Configuration) {
         Left(LoginResultInvalid("no token"))
     }
 
-  /**
-   * loads in the public certificate used for validating the bearer tokens from configuration
-   * @return either the passed JWK object or a Failure indicating why it would not load.
-   */
-  def loadInKey() = Try {
-    val pemCertLocation = config.get[String]("auth.tokenSigningCertPath")
+  private def signingCertPath = config.get[String]("auth.tokenSigningCertPath")
+
+  protected def loadRemoteJWKSet(remotePath:String) = JWKSet.load(new URL(remotePath))
+
+  protected def loadLocalJWKSet(pemCertLocation:String) = {
     val s = Source.fromFile(pemCertLocation, "UTF-8")
     try {
       val pemCertData = s.getLines().reduce(_ + _)
-      JWK.parseFromPEMEncodedX509Cert(pemCertData)
+      new JWKSet(JWK.parseFromPEMEncodedX509Cert(pemCertData))
     } finally {
       s.close()
     }
+  }
+
+  /**
+   * Loads in the public certificate(s) used for validating the bearer tokens from configuration.
+   * @return Either an initialised JWKSet or a Failure indicating why it would not load.
+   */
+  def loadInKey():Try[JWKSet] = Try {
+    val isRemoteMatcher = "^https*:".r.unanchored
+
+    if(isRemoteMatcher.matches(signingCertPath)) {
+      logger.info(s"Loading JWKS from $signingCertPath")
+
+      val set = loadRemoteJWKSet(signingCertPath)
+      logger.info(s"Loaded in ${set.getKeys.toArray.length} keys from endpoint")
+      set
+    } else {
+      logger.info(s"Loading JWKS from local path $signingCertPath")
+      loadLocalJWKSet(signingCertPath)
+    }
+  }
+
+  def getVerifier(maybeKeyId:Option[String]) = maybeVerifiers match {
+    case Some(verifiers) =>
+      maybeKeyId match {
+        case Some(kid) =>
+          logger.info(s"Provided JWT is signed with key ID $kid")
+          val list = verifiers.getKeys
+          if (list.size > 1) {
+            Option(verifiers.getKeyByKeyId(kid))
+              .map(jwk=>new RSASSAVerifier(jwk.toRSAKey))
+          } else {
+            if (list.isEmpty) None else Some(new RSASSAVerifier(list.get(0).toRSAKey))
+          }
+        case None =>
+          logger.info(s"Provided JWT has no key ID, using first available cert")
+          val list = verifiers.getKeys
+          if (list.isEmpty) None else Some(new RSASSAVerifier(list.get(0).toRSAKey))
+      }
+    case None=>None
   }
 
   /**
@@ -105,8 +144,8 @@ class BearerTokenAuth @Inject() (config:Configuration) {
       SignedJWT.parse(token.content)
     } match {
       case Success(signedJWT) =>
-        maybeVerifier match {
-          case Some(verifier) =>
+        getVerifier(Option(signedJWT.getHeader.getKeyID)) match {
+          case Some(verifier)=>
             if (signedJWT.verify(verifier)) {
               logger.debug("verified JWT")
               logger.debug(s"${signedJWT.getJWTClaimsSet.toJSONObject(true).toJSONString}")
@@ -115,6 +154,7 @@ class BearerTokenAuth @Inject() (config:Configuration) {
               Left(LoginResultInvalid(token.content))
             }
           case None =>
+            logger.error(s"No signing certificate could be found. There are ${maybeVerifiers.map(_.getKeys.toArray.length).getOrElse(0)} configured keys from location '$signingCertPath'")
             Left(LoginResultMisconfigured("No signing cert configured"))
         }
       case Failure(err) =>
