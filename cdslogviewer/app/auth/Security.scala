@@ -184,9 +184,14 @@ trait Security extends BaseController {
       val adminClaimContent = for {
         tok <- bearerTokenAuth.extractAuthorization(bearer)
         maybeClaims <- bearerTokenAuth.validateToken(tok)
-        maybeAdminClaim <- Option(maybeClaims.content.getStringClaim(bearerTokenAuth.isAdminClaimName())) match {
-          case Some(str)=>Right(LoginResultOK(str))
-          case None=>Left(LoginResultNotPresent)
+        maybeAdminClaim <- (Option(maybeClaims.content.getStringArrayClaim("roles")), Option(maybeClaims.content.getStringClaim(bearerTokenAuth.isAdminClaimName()))) match {
+          case (Some(roles), _)=>
+            logger.debug(s"Administrative rights check via roles claim")
+            Right(LoginResultOK(roles.contains(bearerTokenAuth.isAdminClaimName()).toString))
+          case (_, Some(_))=>
+            Right(LoginResultOK(s"true"))
+          case (_, None) =>
+            Left(LoginResultNotPresent)
         }
       } yield maybeAdminClaim
 
