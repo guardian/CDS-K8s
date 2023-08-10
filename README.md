@@ -214,3 +214,4 @@ Finally, don't forget your media storage!  CDS will probably require at least re
 to locate the media and upload it.  SAN mounts are most easily propagated to the CDS job by having them mounted on the
 kubernetes node itself and then using a `hostPath` mount to make them visible to the container
 
+
