@@ -2,6 +2,7 @@
 
 ## What is it?
 
+
 This is a framework which allows the Content Delivery System to run within a Kubernetes cluster.
 It replaces the conventional watchfolder-trigger system and it manages the associated
 Kubernetes resources.
