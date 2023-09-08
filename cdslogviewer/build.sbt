@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
 
 //authentication
-libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "8.21"
+libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "9.0"
 libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
 
 //packaging
