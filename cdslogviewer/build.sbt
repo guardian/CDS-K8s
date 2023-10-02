@@ -28,6 +28,14 @@ libraryDependencies += "com.google.guava" % "guava" % "32.0.0-jre"
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.1"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.4.1"
 
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-slf4j" % "2.8.1",
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.8.1",
+  "com.typesafe.akka" %% "akka-protobuf-v3" % "2.8.1",
+  "com.typesafe.akka" %% "akka-stream" % "2.8.1",
+  "com.typesafe.akka" %% "akka-serialization-jackson" % "2.8.1"
+)
+
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
 
