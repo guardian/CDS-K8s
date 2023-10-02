@@ -5,6 +5,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Framing, Keep, Sink, Source}
 import akka.util.ByteString
 import auth.{BearerTokenAuth, Security}
+import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
 
@@ -14,7 +15,6 @@ import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.slf4j.LoggerFactory
 import play.api.cache.SyncCacheApi
 import play.api.http.HttpEntity
 import play.api.libs.circe.Circe
@@ -31,13 +31,13 @@ class LogsController @Inject() (cc:ControllerComponents,
                                 override implicit val cache:SyncCacheApi)
                                (implicit system:ActorSystem, mat:Materializer)
   extends AbstractController(cc) with Security with Circe {
-  override val logger: org.slf4j.Logger = LoggerFactory.getLogger(getClass)
+  override val slf4jLogger: org.slf4j.Logger = LoggerFactory.getLogger(getClass)
   private implicit val ec:ExecutionContext = system.dispatcher
   private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
   def listRoutes = IsAdminAsync { uid=> request=>
     val path = Paths.get(config.get[String]("cds.logbase"))
-    logger.debug(s"Logs base path is $path")
+    slf4jLogger.debug(s"Logs base path is $path")
 
     Source.fromIterator(()=>Files.newDirectoryStream(path).asScala.iterator)
       .filter(_.toFile.isDirectory)
@@ -49,7 +49,7 @@ class LogsController @Inject() (cc:ControllerComponents,
       .map(dirs=>Ok(dirs.asJson))
       .recover({
         case err:Throwable=>
-          logger.error(s"Could not list directories: ${err.getMessage}",err)
+          slf4jLogger.error(s"Could not list directories: ${err.getMessage}",err)
           InternalServerError(GenericErrorResponse("config_error", "Could not list directories, see server logs").asJson)
       })
   }
@@ -98,7 +98,7 @@ class LogsController @Inject() (cc:ControllerComponents,
         )
       } catch {
         case err:Throwable=>
-          logger.error(s"Could not stream log '$logname' from '$route': ${err.getMessage}", err)
+          slf4jLogger.error(s"Could not stream log '$logname' from '$route': ${err.getMessage}", err)
           InternalServerError(GenericErrorResponse("error", err.getMessage).asJson)
       }
     }
@@ -110,7 +110,7 @@ class LogsController @Inject() (cc:ControllerComponents,
     val base = config.get[String]("cds.logbase")
     val path = Paths.get(base, "podnames", name+".txt")
     if(!path.toFile.exists()) {
-      logger.error(s"Pod name file not found at path: ${path.toString()}")
+      slf4jLogger.error(s"Pod name file not found at path: ${path.toString()}")
       NotFound(GenericErrorResponse("not_found","Job name not found").asJson)
     } else {
       val fileSource = scala.io.Source.fromFile(base + "/podnames/" + name + ".txt")
