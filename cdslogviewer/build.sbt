@@ -45,7 +45,7 @@ libraryDependencies ++= Seq(
 )
 
 
-libraryDependencies += "com.dripower" %% "play-circe" % "2814.1"
+libraryDependencies += "com.dripower" %% "play-circe" % "2813.0"
 
 
 //authentication
