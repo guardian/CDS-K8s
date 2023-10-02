@@ -24,33 +24,16 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.6.20"
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.4.1"
-
-libraryDependencies ++= Seq(
-  ehcache,
-  ws,
-  specs2 % Test,
-  "com.google.inject" % "guice" % "4.2.3",
-  "com.typesafe.play" % "play_2.13" % "2.8.19",
-  "com.google.guava" % "guava" % "32.0.0-jre"
-)
-
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-slf4j" % "2.6.20",
-  "com.typesafe.akka" %% "akka-actor-typed" % "2.6.20",
-  "com.typesafe.akka" %% "akka-protobuf-v3" % "2.6.20",
-  "com.typesafe.akka" %% "akka-stream" % "2.6.20",
-  "com.typesafe.akka" %% "akka-serialization-jackson" % "2.6.20"
-)
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.0"
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2"
 
 
-libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
+libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
 
 //authentication
-libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "9.0"
-libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
+libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "9.30.2"
+libraryDependencies += "commons-codec" % "commons-codec" % "20041127.091804"
 
 //packaging
 dockerExposedPorts := Seq(9000)
