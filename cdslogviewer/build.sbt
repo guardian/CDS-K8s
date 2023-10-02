@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "com.google.guava" % "guava" % "32.0.0-jre"
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.1"
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.4"
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.4.1"
 
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
