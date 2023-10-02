@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 import io.circe.generic.auto._
 import io.circe.syntax._
+import org.slf4j.LoggerFactory
 import play.api.cache.SyncCacheApi
 import play.api.http.HttpEntity
 import play.api.libs.circe.Circe
@@ -30,7 +31,7 @@ class LogsController @Inject() (cc:ControllerComponents,
                                 override implicit val cache:SyncCacheApi)
                                (implicit system:ActorSystem, mat:Materializer)
   extends AbstractController(cc) with Security with Circe {
-  override val logger: org.slf4j.Logger = play.api.Logger(getClass).underlying
+  override val logger: org.slf4j.Logger = LoggerFactory.getLogger(getClass)
   private implicit val ec:ExecutionContext = system.dispatcher
   private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
