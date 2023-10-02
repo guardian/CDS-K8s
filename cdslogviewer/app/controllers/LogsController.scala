@@ -5,6 +5,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Framing, Keep, Sink, Source}
 import akka.util.ByteString
 import auth.{BearerTokenAuth, Security}
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 import play.api.mvc.{AbstractController, ControllerComponents, ResponseHeader, Result}
