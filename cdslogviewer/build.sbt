@@ -33,7 +33,7 @@ libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
 //authentication
 libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "9.30.2"
-libraryDependencies += "commons-codec" % "commons-codec" % "20041127.091804"
+libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
 
 //packaging
 dockerExposedPorts := Seq(9000)

@@ -26,7 +26,8 @@ object HMAC {
     mac.init(secret)
     val hashString: Array[Byte] = mac.doFinal(preHashString.getBytes)
 
-    Hex.encodeHexString(hashString) //new String(hashString.map(_.toChar))
+    val encoded = Hex.encodeHexString(hashString) //new String(hashString.map(_.toChar))
+    return encoded
   }
 
   def extract_checksum(digestHeader:String) = {
