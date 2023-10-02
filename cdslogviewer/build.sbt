@@ -28,7 +28,14 @@ libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2"
 libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2"
 
-
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor" % "2.8.0",
+  "com.typesafe.akka" %% "akka-slf4j" % "2.8.0",
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.8.0",
+  "com.typesafe.akka" %% "akka-protobuf-v3" % "2.8.0",
+  "com.typesafe.akka" %% "akka-stream" % "2.8.0",
+  "com.typesafe.akka" %% "akka-serialization-jackson" % "2.8.0"
+)
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
 
