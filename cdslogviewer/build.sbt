@@ -26,6 +26,8 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2"
+libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2"
+
 
 
 libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
