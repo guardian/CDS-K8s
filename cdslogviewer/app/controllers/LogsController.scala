@@ -30,7 +30,7 @@ class LogsController @Inject() (cc:ControllerComponents,
                                 override implicit val cache:SyncCacheApi)
                                (implicit system:ActorSystem, mat:Materializer)
   extends AbstractController(cc) with Security with Circe {
-  override val logger = play.api.Logger(getClass)
+  override val logger: org.slf4j.Logger = play.api.Logger(getClass).underlying
   private implicit val ec:ExecutionContext = system.dispatcher
   private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
