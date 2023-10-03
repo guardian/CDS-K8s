@@ -7,7 +7,7 @@ version := "1.0"
       
 lazy val `cdslogviewer` = (project in file(".")).enablePlugins(PlayScala)
 
-val circeVersion = "0.12.3"
+val circeVersion = "0.14.2"
 
 resolvers += "Akka Snapshot Repository" at "https://repo.akka.io/snapshots/"
       
@@ -24,10 +24,24 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
-libraryDependencies += "com.dripower" %% "play-circe" % "2812.0"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.8.1"
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.2"
+libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2"
+
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor" % "2.8.1",
+  "com.typesafe.akka" %% "akka-slf4j" % "2.8.1",
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.8.1",
+  "com.typesafe.akka" %% "akka-protobuf-v3" % "2.8.1",
+  "com.typesafe.akka" %% "akka-stream" % "2.8.1",
+  "com.typesafe.akka" %% "akka-serialization-jackson" % "2.8.1"
+)
+
+libraryDependencies += "com.dripower" %% "play-circe" % "2814.2"
+
 
 //authentication
-libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "8.21"
+libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "9.30.2"
 libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
 
 //packaging

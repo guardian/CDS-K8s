@@ -13,6 +13,9 @@ import play.api.libs.typedmap.TypedKey
 import java.net.URL
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 
 object BearerTokenAuth {
   final val ClaimsAttributeKey = TypedKey[JWTClaimsSet]("claims")
@@ -41,6 +44,8 @@ object BearerTokenAuth {
  */
 @Singleton
 class BearerTokenAuth @Inject() (config:Configuration) {
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
   private val logger = LoggerFactory.getLogger(getClass)
 
   //see https://stackoverflow.com/questions/475074/regex-to-parse-or-validate-base64-data
@@ -147,8 +152,10 @@ class BearerTokenAuth @Inject() (config:Configuration) {
         getVerifier(Option(signedJWT.getHeader.getKeyID)) match {
           case Some(verifier)=>
             if (signedJWT.verify(verifier)) {
+              val claimsMap = signedJWT.getJWTClaimsSet.toJSONObject(true).asInstanceOf[java.util.Map[String, Object]]
+              val jsonString = mapper.writeValueAsString(claimsMap)
               logger.debug("verified JWT")
-              logger.debug(s"${signedJWT.getJWTClaimsSet.toJSONObject(true).toJSONString}")
+              logger.debug(s"$jsonString")
               Right(LoginResultOK(signedJWT.getJWTClaimsSet))
             } else {
               Left(LoginResultInvalid(token.content))

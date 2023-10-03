@@ -35,6 +35,7 @@ class LogsController @Inject() (cc:ControllerComponents,
   private implicit val ec:ExecutionContext = system.dispatcher
   private implicit val tz:ZoneId = config.getOptional[String]("timezone").map(ZoneId.of).getOrElse(ZoneId.systemDefault())
 
+
   def listRoutes = IsAdminAsync { uid=> request=>
     val path = Paths.get(config.get[String]("cds.logbase"))
     logger.debug(s"Logs base path is $path")
