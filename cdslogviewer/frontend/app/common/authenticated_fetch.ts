@@ -27,7 +27,7 @@ async function authenticatedFetch(input: string, init: any) {
 
   const urlToCall = input.startsWith(deploymentRootPath)
     ? input
-    : deploymentRootPath + "/" + input;
+    : deploymentRootPath + input;
 
   return fetch(urlToCall, newInit);
 }
