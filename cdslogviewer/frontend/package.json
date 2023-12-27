@@ -40,7 +40,7 @@
     "@types/react-dom": "^17.0.3",
     "@types/react-helmet": "^6.1.1",
     "@types/react-router-dom": "^5.1.7",
-    "axios": "^0.21.3",
+    "axios": "^1.6.3",
     "buffer": "^6.0.3",
     "can-ndjson-stream": "^1.0.2",
     "crypto-browserify": "^3.12.0",
