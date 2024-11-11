@@ -14,22 +14,19 @@
     "lint:fix": "prettier --write app __tests__"
   },
   "jest": {
+    "preset": "ts-jest",
     "moduleFileExtensions": [
-      "jsx",
       "js",
-      "tsx",
+      "jsx",
       "ts",
+      "tsx",
       "json"
     ],
-    "verbose": true,
     "transform": {
-      "^.+\\.[jt]sx?$": "ts-jest",
-      "node_modules/react-multistep/.+\\.js$": "ts-jest"
+      "^.+\\.[jt]sx?$": "ts-jest"
     },
-    "testResultsProcessor": "jest-junit",
-    "setupFiles": [
-      "./jestSetup.jsx"
-    ]
+    "testEnvironment": "node",
+    "verbose": true
   },
   "dependencies": {
     "@guardian/pluto-headers": "v2.0.4",
@@ -61,7 +58,7 @@
     "sinon": "19.0.0",
     "stream-browserify": "^3.0.0",
     "style-loader": "3.3.3",
-    "ts-jest": "29.0.4",
+    "ts-jest": "^28.0.8",
     "ts-loader": "^9.1.2",
     "typescript": "^4.2.4",
     "util": "^0.12.3",
@@ -69,13 +66,17 @@
     "webpack-cli": "4.10.0"
   },
   "devDependencies": {
+    "@jest/transform": "28.1.3",
+    "@types/babel__generator": "^7.6.8",
     "@types/date-fns": "^2.6.0",
-    "@types/jest": "^26.0.23",
+    "@types/jest": "28.1.8",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.1",
+    "babel-jest": "28.1.3",
     "enzyme": "^3.11.0",
-    "jest": "^26.6.3",
-    "jest-cli": "^26.6.3",
+    "jest": "28.1.3",
+    "jest-cli": "28.1.3",
     "jest-junit": "^12.0.0",
+    "jest-runtime": "28.1.3",
     "moxios": "^0.4.0",
     "prettier": "^2.2.1"
   },
