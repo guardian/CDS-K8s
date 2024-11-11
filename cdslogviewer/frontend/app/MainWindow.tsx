@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RouteComponentProps, useParams } from "react-router";
+import { useParams } from "react-router";
 import { makeStyles, Typography } from "@material-ui/core";
 import LogSelector from "./LogSelector";
 import LogReader from "./LogReader";
@@ -42,13 +42,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MainWindow: React.FC<RouteComponentProps> = (props) => {
+const MainWindow: React.FC = () => {
   const classes = useStyles();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(undefined);
 
-  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(
-    undefined
-  );
 
   return (
     <>

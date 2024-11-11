@@ -20,7 +20,7 @@ import {
 import { loadLogsForRoute } from "./data-loading";
 import { formatBytes } from "./common/bytesformatter";
 import clsx from "clsx";
-import { useHistory, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import {
   SystemNotification,
   SystemNotifcationKind,
@@ -167,7 +167,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
     routename: string | undefined;
     podname: string | undefined;
   }>();
-  const history = useHistory();
+  const history = useNavigate();
 
   useEffect(() => {
     loadKnownRoutes();
@@ -196,7 +196,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
       if (props.onError) {
         props.onError(formatError(err, false));
       }
-      if (err.response && props.onNotLoggedIn) {
+      if (axios.isAxiosError(err) && err.response && props.onNotLoggedIn) {
         if (err.response.status == 403 || err.response.status == 401)
           props.onNotLoggedIn();
       }
@@ -204,7 +204,7 @@ const LogSelector: React.FC<LogSelectorProps> = (props) => {
   };
 
   const logSelectionDidChange = (routeName: string, logName: string) => {
-    history.push(`/log/${routeName}/${logName}`);
+    history(`/log/${routeName}/${logName}`);
   };
 
   const handleToggle = (event: React.ChangeEvent<{}>, nodeIds: string[]) => {
