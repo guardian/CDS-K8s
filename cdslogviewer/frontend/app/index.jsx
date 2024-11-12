@@ -6,7 +6,7 @@ import {
   createMuiTheme,
   CssBaseline,
   IconButton,
-} from '@mui/material/styles';
+} from "@mui/material/styles";
 import axios from "axios";
 import MainWindow from "./MainWindow";
 import {

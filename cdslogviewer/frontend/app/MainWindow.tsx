@@ -45,8 +45,9 @@ const useStyles = makeStyles((theme) => ({
 const MainWindow: React.FC = () => {
   const classes = useStyles();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(undefined);
-
+  const [selectedLog, setSelectedLog] = useState<SelectedLog | undefined>(
+    undefined
+  );
 
   return (
     <>
