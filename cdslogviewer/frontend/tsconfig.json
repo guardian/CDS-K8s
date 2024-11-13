@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "esModuleInterop": true,
-    "jsx": "react",
-    "module": "ES2015",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "strict": true,
-    "isolatedModules": true,
-    "target": "ES2016"
+    "allowJs": true,                     // Allow JS files
+    "esModuleInterop": true,             // Support ESModule interop
+    "jsx": "react",                      // React JSX syntax
+    "module": "commonjs",                // Jest uses CommonJS modules
+    "moduleResolution": "node",          // Resolve modules in Node style
+    "sourceMap": true,                   // Enable source maps
+    "strict": true,                      // Enable all strict type checks
+    "isolatedModules": true,             // Required for "ES2015" or above modules
+    "target": "ES2016",                  // Suitable for modern browsers and Node
+    "types": ["jest", "node"]            // Include Jest and Node types
   },
   "include": ["./app/", "__tests__", "types/types.d.ts"],
   "exclude": ["node_modules"]

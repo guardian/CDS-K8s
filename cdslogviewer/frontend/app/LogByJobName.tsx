@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useHistory } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { loadLogForJobNameURL } from "./data-loading";
 import {
   SystemNotifcationKind,
@@ -16,20 +16,28 @@ const LogByJobName: React.FC<LogByJobNameProps> = (props) => {
     jobname: string;
   }>();
 
-  const history = useHistory();
+  const history = useNavigate();
 
   const forwardToURL = () => {
-    loadLogForJobNameURL(jobname)
-      .then((result) => {
-        history.push(result);
-      })
-      .catch((err) => {
-        console.error("Could not load log URL: ", err);
-        SystemNotification.open(
-          SystemNotifcationKind.Error,
-          `Could not load log URL: ${formatError(err, false)}`
-        );
-      });
+    if (jobname) {
+      loadLogForJobNameURL(jobname)
+        .then((result) => {
+          history(result);
+        })
+        .catch((err) => {
+          console.error("Could not load log URL: ", err);
+          SystemNotification.open(
+            SystemNotifcationKind.Error,
+            `Could not load log URL: ${formatError(err, false)}`
+          );
+        });
+    } else {
+      console.error("Job name is undefined");
+      SystemNotification.open(
+        SystemNotifcationKind.Error,
+        "Job name is undefined"
+      );
+    }
   };
 
   return <>{forwardToURL()}</>;
