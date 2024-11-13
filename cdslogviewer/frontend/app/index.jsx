@@ -185,9 +185,15 @@ class App extends React.Component {
                 </IconButton>
               </div>
               <Routes>
-                <Route path="/log/:routename/:podname" element={<MainWindow />} />
+                <Route
+                  path="/log/:routename/:podname"
+                  element={<MainWindow />}
+                />
                 <Route path="/log/:routename" element={<MainWindow />} />
-                <Route path="/logByJobName/:jobname" element={<LogByJobName />} />
+                <Route
+                  path="/logByJobName/:jobname"
+                  element={<LogByJobName />}
+                />
                 <Route path="/log" element={<MainWindow />} />
                 <Route path="/" element={<Navigate to="/log" replace />} />
               </Routes>
@@ -199,7 +205,7 @@ class App extends React.Component {
     );
   }
 }
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   render(
     <BrowserRouter basename={deploymentRootPath}>
       <App />
@@ -207,4 +213,3 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("app")
   );
 });
-
