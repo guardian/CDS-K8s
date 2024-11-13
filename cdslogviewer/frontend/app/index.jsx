@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
-import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import {
   ThemeProvider,
   createTheme,
@@ -184,13 +184,13 @@ class App extends React.Component {
                   {this.state.isDark ? <Brightness7 /> : <Brightness4 />}
                 </IconButton>
               </div>
-              <Switch>
-                <Route path="/log/:routename/:podname" component={MainWindow} />
-                <Route path="/log/:routename" component={MainWindow} />
-                <Route path="/logByJobName/:jobname" component={LogByJobName} />
-                <Route path="/log" component={MainWindow} />
-                <Route path="/" exact render={() => <Redirect to="/log" />} />
-              </Switch>
+              <Routes>
+                <Route path="/log/:routename/:podname" element={<MainWindow />} />
+                <Route path="/log/:routename" element={<MainWindow />} />
+                <Route path="/logByJobName/:jobname" element={<LogByJobName />} />
+                <Route path="/log" element={<MainWindow />} />
+                <Route path="/" element={<Navigate to="/log" replace />} />
+              </Routes>
               <SystemNotification />
             </div>
           </ThemeProvider>
@@ -199,10 +199,12 @@ class App extends React.Component {
     );
   }
 }
+document.addEventListener('DOMContentLoaded', () => {
+  render(
+    <BrowserRouter basename={deploymentRootPath}>
+      <App />
+    </BrowserRouter>,
+    document.getElementById("app")
+  );
+});
 
-render(
-  <BrowserRouter basename={deploymentRootPath}>
-    <App />
-  </BrowserRouter>,
-  document.getElementById("app")
-);
