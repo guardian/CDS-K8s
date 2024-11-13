@@ -3,10 +3,10 @@ import { render } from "react-dom";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import {
   ThemeProvider,
-  createMuiTheme,
+  createTheme,
   CssBaseline,
   IconButton,
-} from "@mui/material/styles";
+} from "@material-ui/core";
 import axios from "axios";
 import MainWindow from "./MainWindow";
 import {
