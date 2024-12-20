@@ -424,10 +424,10 @@
   resolved "https://registry.npmjs.org/@emotion/weak-memoize/-/weak-memoize-0.4.0.tgz#5e13fac887f08c44f76b0ccaf3370eb00fec9bb6"
   integrity sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==
 
-"@guardian/pluto-headers@v2.0.4":
-  version "2.0.4"
-  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/2.0.4/5b5e2aa2fd7557dddf8e66c226fc1b0299455a64#5b5e2aa2fd7557dddf8e66c226fc1b0299455a64"
-  integrity sha512-9g/g0D+U08CT5sfSeNZDTR2C8xDTHEYzrhqEo+g8DDp67BCuf0Sc1tt2nrR+mJoz0z+jat2xUVIW/QJFniYmwA==
+"@guardian/pluto-headers@v2.1.1":
+  version "2.1.1"
+  resolved "https://npm.pkg.github.com/download/@guardian/pluto-headers/2.1.1/cf8f63c25f46a15ab7c3c23b73e1c65230f07b1e#cf8f63c25f46a15ab7c3c23b73e1c65230f07b1e"
+  integrity sha512-AsAoCnQDS9V2RNMDJIdi6KlZaKUw8iczWH9lWyKwkS666p46H83O8+FBTceui1M1LKLNfQSV2MW/MyQUYOyC9Q==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
